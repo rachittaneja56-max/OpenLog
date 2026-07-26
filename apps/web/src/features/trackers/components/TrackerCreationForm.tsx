@@ -3,7 +3,13 @@ import { trackerCreationSchema, type TrackerCreationInput } from '@openlog/share
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Textarea, TextInput } from '../../../components/ui';
+import { useToast } from '../../../app/providers';
+import { isApiError } from '../../../lib/api-error';
 import { useCreateTracker } from '../hooks/use-create-tracker';
+
+const trackerFields = ['displayName', 'topic', 'description', 'timezone'] as const;
+
+type TrackerField = (typeof trackerFields)[number];
 
 function getTimezone(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
@@ -11,6 +17,7 @@ function getTimezone(): string {
 
 export function TrackerCreationForm(): JSX.Element {
   const navigate = useNavigate();
+  const toast = useToast();
   const creation = useCreateTracker();
   const form = useForm<TrackerCreationInput>({
     resolver: zodResolver(trackerCreationSchema),
@@ -25,63 +32,79 @@ export function TrackerCreationForm(): JSX.Element {
   const onSubmit = async (values: TrackerCreationInput): Promise<void> => {
     try {
       const result = await creation.mutate(values);
+      toast.notify('Your log is live. Your owner dashboard is ready.');
       navigate(result.dashboardPath);
-    } catch {
-      // The mutation hook already stores a safe, user-facing ApiError.
+    } catch (error: unknown) {
+      if (!isApiError(error) || !error.fieldErrors) return;
+      for (const field of trackerFields) {
+        const message = error.fieldErrors[field]?.[0];
+        if (message) form.setError(field, { type: 'server', message });
+      }
     }
   };
 
+  const errorMessage = creation.error?.message;
+  const fieldError = (field: TrackerField): string | undefined =>
+    form.formState.errors[field]?.message;
+
   return (
-    <Card variant="green" className="mx-auto max-w-3xl">
-      <div className="mb-7">
-        <p className="font-mono text-xs font-bold uppercase tracking-widest">
-          Create your first log
-        </p>
-        <h2 className="mt-2 text-3xl">Start learning in public</h2>
-        <p className="mt-3 font-medium">
-          No account or password. Your browser receives a private owner cookie.
-        </p>
+    <Card
+      id="create-log"
+      variant="yellow"
+      className="mx-auto w-full max-w-xl scroll-mt-8 p-6 md:p-8"
+    >
+      <div className="mb-7 flex items-start justify-between gap-4">
+        <div>
+          <p className="font-mono text-xs font-bold uppercase tracking-widest">Create your log</p>
+          <h2 className="mt-2 text-3xl">Start with one goal.</h2>
+        </div>
+        <span className="border-2 border-border bg-green px-2 py-1 font-mono text-[10px] font-bold uppercase">
+          Free
+        </span>
       </div>
       <form className="grid gap-5" onSubmit={form.handleSubmit(onSubmit)} noValidate>
         <TextInput
           id="tracker-display-name"
           label="Display name"
-          placeholder="Rachitâ€™s System Design"
+          placeholder="Rachit's System Design"
           helperText="Optional. Maximum 60 characters."
-          error={form.formState.errors.displayName?.message}
+          error={fieldError('displayName')}
           {...form.register('displayName')}
         />
         <TextInput
           id="tracker-topic"
-          label="Topic"
+          label="What are you learning?"
           placeholder="System Design"
           required
-          error={form.formState.errors.topic?.message}
+          error={fieldError('topic')}
           {...form.register('topic')}
         />
         <Textarea
           id="tracker-description"
-          label="Description"
-          placeholder="What are you learning and why?"
+          label="Short description"
+          placeholder="The concepts I am working through this season."
           helperText="Optional. Maximum 300 characters."
-          error={form.formState.errors.description?.message}
+          error={fieldError('description')}
           {...form.register('description')}
         />
         <TextInput
           id="tracker-timezone"
           label="Timezone"
-          helperText="Used later to calculate daily entries correctly."
-          error={form.formState.errors.timezone?.message}
+          helperText="Detected from your browser. You can change it."
+          error={fieldError('timezone')}
           {...form.register('timezone')}
         />
-        {creation.error ? (
+        {errorMessage ? (
           <p className="border-[3px] border-border bg-danger p-3 font-bold" role="alert">
-            {creation.error.message}
+            {errorMessage}
           </p>
         ) : null}
-        <Button type="submit" loading={creation.isPending} className="justify-self-start">
-          {creation.isPending ? 'Creating tracker' : 'Create tracker'}
+        <Button type="submit" loading={creation.isPending} className="w-full">
+          {creation.isPending ? 'Creating your log' : 'Start my log →'}
         </Button>
+        <p className="text-center font-mono text-[11px] font-bold uppercase tracking-wide">
+          No login required · Your owner access stays in this browser
+        </p>
       </form>
     </Card>
   );
