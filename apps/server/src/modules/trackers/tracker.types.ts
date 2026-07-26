@@ -2,7 +2,6 @@
 import type { PublicEntry } from '../entries/entry.types';
 
 export type PublicTracker = {
-  id: string;
   slug: string;
   displayName: string | null;
   topic: string;
@@ -16,6 +15,7 @@ export type PublicTracker = {
 
 export type CreateTrackerResult = {
   tracker: PublicTracker;
+  trackerId: string;
   publicPath: string;
   dashboardPath: string;
   ownerToken: string;

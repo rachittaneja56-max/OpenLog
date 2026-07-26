@@ -1,4 +1,4 @@
-import type { ActivityDay, StreakStats, TrackerCreationInput } from '@openlog/shared';
+﻿import type { ActivityDay, StreakStats, TrackerCreationInput } from '@openlog/shared';
 import { apiRequest } from '../../../lib/api-client';
 
 export type TrackerStats = StreakStats;
@@ -15,7 +15,6 @@ export type TrackerEntry = {
 };
 
 export type PublicTracker = {
-  id: string;
   slug: string;
   displayName: string | null;
   topic: string;

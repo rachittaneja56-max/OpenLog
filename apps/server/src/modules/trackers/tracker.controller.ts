@@ -1,4 +1,4 @@
-import type { NextFunction, Request, Response } from 'express';
+﻿import type { NextFunction, Request, Response } from 'express';
 import { ERROR_CODES, type ApiResponse } from '@openlog/shared';
 import { HttpError } from '../../errors/http-error';
 import { setOwnerCookie } from '../ownership/owner-cookie';
@@ -27,7 +27,7 @@ export async function createTrackerController(
     }
 
     const result: CreateTrackerResult = await createTracker(input);
-    setOwnerCookie(response, result.tracker.id, result.ownerToken);
+    setOwnerCookie(response, result.trackerId, result.ownerToken);
     response.status(201).json({
       success: true,
       data: {

@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+﻿import { createHash, randomBytes } from 'node:crypto';
 import type { Entry } from '../../database/schema/entries';
 import { buildActivityDays, calculateStreakStats, type StreakEntry } from '@openlog/shared';
 import { db } from '../../database/client';
@@ -68,7 +68,6 @@ function toPublicTracker(
   }));
   const publicEntries: PublicEntry[] = entries.map(toPublicEntry);
   return {
-    id: tracker.id,
     slug: tracker.slug,
     displayName: tracker.displayName,
     topic: tracker.topic,
@@ -123,6 +122,7 @@ export async function createTracker(
       const publicTracker = toPublicTracker(tracker, []);
       return {
         tracker: publicTracker,
+        trackerId: tracker.id,
         publicPath: `/learn/${slug}`,
         dashboardPath: `/dashboard/${slug}`,
         ownerToken,
