@@ -1,4 +1,5 @@
 import { app } from './app';
+import { closeDatabaseConnection } from './database/client';
 import { env } from './config/env';
 
 const server = app.listen(env.PORT, () => {
@@ -22,7 +23,12 @@ function shutdown(signal: string): void {
       return;
     }
 
-    console.info('OpenLog server stopped.');
+    void closeDatabaseConnection()
+      .then(() => console.info('OpenLog server stopped.'))
+      .catch(() => {
+        console.error('Database connection shutdown failed.');
+        process.exitCode = 1;
+      });
   });
 }
 

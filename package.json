@@ -8,7 +8,10 @@
     "typecheck": "pnpm --filter shared build && pnpm --recursive run typecheck",
     "lint": "eslint . --ext .js,.ts,.tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "db:generate": "pnpm --filter server db:generate",
+    "db:migrate": "pnpm --filter server db:migrate",
+    "db:studio": "pnpm --filter server db:studio"
   },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^7.9.0",
