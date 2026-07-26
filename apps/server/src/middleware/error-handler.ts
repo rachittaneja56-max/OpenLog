@@ -11,6 +11,7 @@ export const errorHandler: ErrorRequestHandler = (error, _request, response, _ne
       error: {
         code: error.code,
         message: error.message,
+        ...(error.fieldErrors ? { fieldErrors: error.fieldErrors } : {}),
       },
     });
     return;

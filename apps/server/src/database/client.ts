@@ -12,6 +12,8 @@ const sql = postgres(env.DATABASE_URL, {
 
 export const db = drizzle(sql, { schema });
 
+export type DatabaseExecutor = Pick<typeof db, 'insert' | 'select' | 'update' | 'delete'>;
+
 export async function checkDatabaseConnection(): Promise<boolean> {
   try {
     await sql`select 1`;

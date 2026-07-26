@@ -1,9 +1,12 @@
 import { eq } from 'drizzle-orm';
-import { db } from '../database/client';
+import { db, type DatabaseExecutor } from '../database/client';
 import { trackers, type NewTracker, type Tracker } from '../database/schema/trackers';
 
-export async function insertTracker(input: NewTracker): Promise<Tracker> {
-  const [tracker] = await db.insert(trackers).values(input).returning();
+export async function insertTracker(
+  input: NewTracker,
+  database: DatabaseExecutor = db
+): Promise<Tracker> {
+  const [tracker] = await database.insert(trackers).values(input).returning();
   return tracker;
 }
 

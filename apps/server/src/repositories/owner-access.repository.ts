@@ -1,13 +1,16 @@
 import { eq } from 'drizzle-orm';
-import { db } from '../database/client';
+import { db, type DatabaseExecutor } from '../database/client';
 import {
   ownerAccess,
   type NewOwnerAccess,
   type OwnerAccess,
 } from '../database/schema/owner-access';
 
-export async function insertOwnerAccess(input: NewOwnerAccess): Promise<OwnerAccess> {
-  const [access] = await db.insert(ownerAccess).values(input).returning();
+export async function insertOwnerAccess(
+  input: NewOwnerAccess,
+  database: DatabaseExecutor = db
+): Promise<OwnerAccess> {
+  const [access] = await database.insert(ownerAccess).values(input).returning();
   return access;
 }
 

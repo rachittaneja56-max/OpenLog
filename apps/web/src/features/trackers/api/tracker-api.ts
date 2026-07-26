@@ -1,3 +1,4 @@
+import type { TrackerCreationInput } from '@openlog/shared';
 import { apiRequest } from '../../../lib/api-client';
 
 export type TrackerStats = {
@@ -28,22 +29,16 @@ export type PublicTracker = {
   entries: TrackerEntry[];
 };
 
-export type CreateTrackerInput = {
-  slug: string;
-  displayName?: string;
-  topic: string;
-  description?: string;
-  timezone: string;
-};
+export type CreateTrackerInput = TrackerCreationInput;
 
 export type CreatedTracker = {
   tracker: PublicTracker;
-  publicUrl: string;
+  publicPath: string;
+  dashboardPath: string;
 };
 
 export type OwnerAccess = {
-  trackerId: string;
-  hasAccess: boolean;
+  isOwner: boolean;
 };
 
 export async function createTracker(
@@ -62,5 +57,5 @@ export async function getPublicTracker(slug: string, signal?: AbortSignal): Prom
 }
 
 export async function getOwnerAccess(slug: string, signal?: AbortSignal): Promise<OwnerAccess> {
-  return apiRequest<OwnerAccess>(`/trackers/${encodeURIComponent(slug)}/owner-access`, { signal });
+  return apiRequest<OwnerAccess>(`/trackers/${encodeURIComponent(slug)}/access`, { signal });
 }

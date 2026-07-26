@@ -1,4 +1,5 @@
 import { ArrowRight, Check, Flame, Globe2, Minus, Plus } from 'lucide-react';
+import { TrackerCreationForm } from '../features/trackers/components';
 import { useState } from 'react';
 import {
   Badge,
@@ -73,6 +74,8 @@ export function LandingPage(): JSX.Element {
           </div>
         </div>
       </section>
+
+      <TrackerCreationForm />
 
       <section className="grid gap-6 md:grid-cols-3">
         <div className="neo-box bg-blue p-6 md:p-8">
