@@ -1,18 +1,8 @@
-import type { TrackerCreationInput } from '@openlog/shared';
+import type { ActivityDay, StreakStats, TrackerCreationInput } from '@openlog/shared';
 import { apiRequest } from '../../../lib/api-client';
 
-export type TrackerStats = {
-  currentStreak: number;
-  longestStreak: number;
-  totalActiveDays: number;
-  totalMinutes: number;
-};
-
-export type TrackerActivityDay = {
-  date: string;
-  active: boolean;
-  minutesSpent: number | null;
-};
+export type TrackerStats = StreakStats;
+export type TrackerActivityDay = ActivityDay;
 
 export type TrackerEntry = {
   id: string;
@@ -34,7 +24,7 @@ export type PublicTracker = {
   createdAt: string;
   stats: TrackerStats;
   entries: TrackerEntry[];
-  heatmap: TrackerActivityDay[];
+  heatmap: ActivityDay[];
 };
 
 export type CreateTrackerInput = TrackerCreationInput;

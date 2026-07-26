@@ -1,5 +1,5 @@
-import type { EntryCreationInput } from '@openlog/shared';
-import { useMemo, useState } from 'react';
+import { buildActivityMonthLabels, type EntryCreationInput } from '@openlog/shared';
+import { useCallback, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useToast } from '../app/providers';
 import {
@@ -66,6 +66,27 @@ export function DashboardPage(): JSX.Element {
   const [deletingEntry, setDeletingEntry] = useState<TrackerEntry | null>(null);
   const publicPath = `/learn/${slug}`;
   const publicUrl = useMemo(() => `${window.location.origin}${publicPath}`, [publicPath]);
+  const monthLabels = useMemo(
+    () => buildActivityMonthLabels(dashboard.tracker?.heatmap ?? []),
+    [dashboard.tracker?.heatmap]
+  );
+  const entryIdsByDate = useMemo(
+    () =>
+      Object.fromEntries(
+        (dashboard.tracker?.entries ?? []).map((entry) => [entry.entryDate, entry.id])
+      ),
+    [dashboard.tracker?.entries]
+  );
+  const selectEntryDate = useCallback(
+    (date: string): void => {
+      const entryId = entryIdsByDate[date];
+      if (!entryId) return;
+      const entryElement = document.getElementById(`entry-${entryId}`);
+      entryElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      entryElement?.focus({ preventScroll: true });
+    },
+    [entryIdsByDate]
+  );
 
   const createTodayEntry = async (values: EntryCreationInput): Promise<void> => {
     await createMutation.mutate({ slug, input: values });
@@ -118,20 +139,33 @@ export function DashboardPage(): JSX.Element {
         className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]"
         aria-labelledby="today-entry-heading"
       >
-        <Card variant="green">
-          <SectionHeading id="today-entry-heading" eyebrow="One note per day">
-            TODAY’S ENTRY
-          </SectionHeading>
-          <p className="mb-7 mt-4 font-medium">
-            Write down the useful thing before the day gets away.
-          </p>
-          <EntryForm
-            submitLabel="LOG TODAY’S LEARNING"
-            isPending={createMutation.isPending}
-            error={createMutation.error}
-            onSubmit={createTodayEntry}
-          />
-        </Card>
+        {tracker.stats.hasLoggedToday ? (
+          <Card variant="green">
+            <SectionHeading id="today-entry-heading" eyebrow="TODAY COMPLETE">
+              TODAY’S ENTRY
+            </SectionHeading>
+            <p className="mt-5 text-2xl font-bold uppercase">You showed up today.</p>
+            <p className="mt-3 font-medium leading-relaxed">
+              Your latest note is part of the public record. Edit it below whenever you need to
+              refine the thought.
+            </p>
+          </Card>
+        ) : (
+          <Card variant="green">
+            <SectionHeading id="today-entry-heading" eyebrow="LOG TODAY TO CONTINUE">
+              TODAY’S ENTRY
+            </SectionHeading>
+            <p className="mb-7 mt-4 font-medium">
+              Write down the useful thing before the day gets away.
+            </p>
+            <EntryForm
+              submitLabel="LOG TODAY’S LEARNING"
+              isPending={createMutation.isPending}
+              error={createMutation.error}
+              onSubmit={createTodayEntry}
+            />
+          </Card>
+        )}
         <div className="grid gap-5">
           <div className="grid gap-5 sm:grid-cols-2">
             <StatCard
@@ -148,7 +182,7 @@ export function DashboardPage(): JSX.Element {
             />
             <StatCard
               variant="blue"
-              label="Active days"
+              label="Total learning days"
               value={tracker.stats.totalActiveDays}
               detail="total"
             />
@@ -163,7 +197,11 @@ export function DashboardPage(): JSX.Element {
             <p className="font-mono text-xs font-bold uppercase tracking-widest">Activity</p>
             <p className="mt-2 font-medium">Your last 12 weeks, one square per calendar day.</p>
             <div className="mt-5">
-              <TrackerHeatmap days={tracker.heatmap} />
+              <TrackerHeatmap
+                days={tracker.heatmap}
+                monthLabels={monthLabels}
+                onSelectDate={selectEntryDate}
+              />
             </div>
           </Card>
         </div>
@@ -171,7 +209,6 @@ export function DashboardPage(): JSX.Element {
 
       <EntryHistory
         entries={tracker.entries}
-        timezone={tracker.timezone}
         onEdit={setEditingEntry}
         onDelete={setDeletingEntry}
       />

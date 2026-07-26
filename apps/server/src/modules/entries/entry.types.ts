@@ -10,12 +10,6 @@ export type PublicEntry = {
   resourceUrl: string | null;
 };
 
-export type ActivityDay = {
-  date: string;
-  active: boolean;
-  minutesSpent: number | null;
-};
-
 export type EntryRouteLocals = {
   slug?: string;
   entryId?: string;

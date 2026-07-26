@@ -1,22 +1,26 @@
-﻿import { ExternalLink, Pencil } from 'lucide-react';
+import { ExternalLink, Pencil } from 'lucide-react';
 import { Button } from '../../../components/ui';
 import { formatEntryDate } from '../utils';
 import type { TrackerEntry } from '../../trackers/api/tracker-api';
 
 type EntryCardProps = {
   entry: TrackerEntry;
-  timezone: string;
+
   onEdit: (entry: TrackerEntry) => void;
   onDelete: (entry: TrackerEntry) => void;
 };
 
-export function EntryCard({ entry, timezone, onEdit, onDelete }: EntryCardProps): JSX.Element {
+export function EntryCard({ entry, onEdit, onDelete }: EntryCardProps): JSX.Element {
   return (
-    <article className="neo-box bg-surface p-5 md:p-7">
+    <article
+      id={`entry-${entry.id}`}
+      tabIndex={-1}
+      className="neo-box bg-surface p-5 outline-none md:p-7"
+    >
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
           <p className="font-mono text-xs font-bold uppercase tracking-widest">
-            {formatEntryDate(entry.entryDate, timezone)}
+            {formatEntryDate(entry.entryDate)}
           </p>
           <h3 className="mt-3 text-2xl">Learning entry</h3>
         </div>

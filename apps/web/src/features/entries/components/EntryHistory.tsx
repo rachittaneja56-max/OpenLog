@@ -3,17 +3,11 @@ import type { TrackerEntry } from '../../trackers/api/tracker-api';
 
 type EntryHistoryProps = {
   entries: TrackerEntry[];
-  timezone: string;
   onEdit: (entry: TrackerEntry) => void;
   onDelete: (entry: TrackerEntry) => void;
 };
 
-export function EntryHistory({
-  entries,
-  timezone,
-  onEdit,
-  onDelete,
-}: EntryHistoryProps): JSX.Element {
+export function EntryHistory({ entries, onEdit, onDelete }: EntryHistoryProps): JSX.Element {
   return (
     <section aria-labelledby="entry-history-heading">
       <div className="mb-5 flex items-end justify-between gap-4">
@@ -33,13 +27,7 @@ export function EntryHistory({
       ) : (
         <div className="grid gap-5">
           {entries.map((entry) => (
-            <EntryCard
-              key={entry.id}
-              entry={entry}
-              timezone={timezone}
-              onEdit={onEdit}
-              onDelete={onDelete}
-            />
+            <EntryCard key={entry.id} entry={entry} onEdit={onEdit} onDelete={onDelete} />
           ))}
         </div>
       )}

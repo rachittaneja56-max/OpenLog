@@ -8,3 +8,5 @@ export { trackerCreationSchema } from './schemas/trackers';
 export { entryCreationSchema, entryUpdateSchema } from './schemas/entries';
 export type { NormalizedTrackerCreationInput, TrackerCreationInput } from './schemas/trackers';
 export type { EntryCreationInput, EntryUpdateInput } from './schemas/entries';
+
+export * from './streaks';

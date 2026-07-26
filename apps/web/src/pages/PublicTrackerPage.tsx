@@ -1,4 +1,6 @@
-﻿import { ExternalLink } from 'lucide-react';
+import { buildActivityMonthLabels } from '@openlog/shared';
+import { ExternalLink } from 'lucide-react';
+import { useMemo } from 'react';
 import { useParams } from 'react-router-dom';
 import { Card, ErrorState, LoadingBlock, SectionHeading, StatCard } from '../components/ui';
 import { formatEntryDate } from '../features/entries/utils';
@@ -8,6 +10,10 @@ import { usePublicTracker } from '../features/trackers/hooks/use-public-tracker'
 export function PublicTrackerPage(): JSX.Element {
   const { slug = '' } = useParams();
   const tracker = usePublicTracker(slug);
+  const monthLabels = useMemo(
+    () => buildActivityMonthLabels(tracker.data?.heatmap ?? []),
+    [tracker.data?.heatmap]
+  );
 
   if (tracker.isLoading && !tracker.data) return <LoadingBlock label="Loading tracker" />;
   if (tracker.error && !tracker.data)
@@ -65,7 +71,7 @@ export function PublicTrackerPage(): JSX.Element {
         <SectionHeading eyebrow="Consistency">Activity heatmap</SectionHeading>
         <p className="mt-3 font-medium">A public view of the last 12 weeks.</p>
         <div className="mt-6">
-          <TrackerHeatmap days={data.heatmap} />
+          <TrackerHeatmap days={data.heatmap} monthLabels={monthLabels} />
         </div>
       </Card>
 
@@ -83,7 +89,7 @@ export function PublicTrackerPage(): JSX.Element {
             {data.entries.map((entry) => (
               <article key={entry.id} className="neo-box bg-surface p-5 md:p-7">
                 <p className="font-mono text-xs font-bold uppercase tracking-widest">
-                  {formatEntryDate(entry.entryDate, data.timezone)}
+                  {formatEntryDate(entry.entryDate)}
                 </p>
                 <h2 className="mt-3 text-2xl">What was learned</h2>
                 <p className="mt-3 whitespace-pre-wrap font-medium leading-relaxed">
