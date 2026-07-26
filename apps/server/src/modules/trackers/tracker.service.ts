@@ -1,15 +1,25 @@
-import { createHash, randomBytes } from 'node:crypto';
+﻿import { createHash, randomBytes } from 'node:crypto';
+import type { Entry } from '../../database/schema/entries';
 import { db } from '../../database/client';
 import { insertOwnerAccess } from '../../repositories/owner-access.repository';
+import { findEntriesByTracker } from '../../repositories/entry.repository';
 import {
   checkSlugExists,
   findTrackerBySlug,
   insertTracker,
 } from '../../repositories/tracker.repository';
 import type { NormalizedTrackerCreationInput } from '@openlog/shared';
+import {
+  addCalendarDays,
+  calendarDateDistance,
+  getCalendarDateInTimezone,
+} from '../../utils/calendar';
+import { toPublicEntry } from '../entries/entry.service';
+import type { ActivityDay, PublicEntry } from '../entries/entry.types';
 import type { CreateTrackerResult, PublicTracker } from './tracker.types';
 
 const MAX_SLUG_ATTEMPTS = 5;
+const HEATMAP_DAYS = 84;
 
 function createSlugBase(input: NormalizedTrackerCreationInput): string {
   const source = input.displayName ?? input.topic;
@@ -43,14 +53,64 @@ function hashOwnerToken(token: string): string {
   return createHash('sha256').update(token, 'utf8').digest('hex');
 }
 
-function toPublicTracker(tracker: {
-  id: string;
-  slug: string;
-  displayName: string | null;
-  topic: string;
-  description: string | null;
-  timezone: string;
-}): PublicTracker {
+function calculateStats(entries: Entry[], today: string): PublicTracker['stats'] {
+  const dates = entries.map((entry) => entry.entryDate).sort();
+  const dateSet = new Set(dates);
+  let currentStreak = 0;
+  let cursor = today;
+
+  while (dateSet.has(cursor)) {
+    currentStreak += 1;
+    cursor = addCalendarDays(cursor, -1);
+  }
+
+  let longestStreak = dates.length > 0 ? 1 : 0;
+  let run = 1;
+  for (let index = 1; index < dates.length; index += 1) {
+    if (calendarDateDistance(dates[index - 1], dates[index]) === 1) {
+      run += 1;
+      longestStreak = Math.max(longestStreak, run);
+    } else {
+      run = 1;
+    }
+  }
+
+  return {
+    currentStreak,
+    longestStreak,
+    totalActiveDays: entries.length,
+    totalMinutes: entries.reduce((total, entry) => total + (entry.minutesSpent ?? 0), 0),
+  };
+}
+
+function buildHeatmap(entries: Entry[], today: string): ActivityDay[] {
+  const entriesByDate = new Map(entries.map((entry) => [entry.entryDate, entry]));
+  const startDate = addCalendarDays(today, -(HEATMAP_DAYS - 1));
+  return Array.from({ length: HEATMAP_DAYS }, (_, index) => {
+    const date = addCalendarDays(startDate, index);
+    const entry = entriesByDate.get(date);
+    return {
+      date,
+      active: entry !== undefined,
+      minutesSpent: entry?.minutesSpent ?? null,
+    };
+  });
+}
+
+function toPublicTracker(
+  tracker: {
+    id: string;
+    slug: string;
+    displayName: string | null;
+    topic: string;
+    description: string | null;
+    timezone: string;
+    createdAt: Date;
+  },
+  entries: Entry[]
+): PublicTracker {
+  const today = getCalendarDateInTimezone(tracker.timezone);
+  const publicEntries: PublicEntry[] = entries.map(toPublicEntry);
   return {
     id: tracker.id,
     slug: tracker.slug,
@@ -58,13 +118,10 @@ function toPublicTracker(tracker: {
     topic: tracker.topic,
     description: tracker.description,
     timezone: tracker.timezone,
-    entries: [],
-    stats: {
-      currentStreak: 0,
-      longestStreak: 0,
-      totalActiveDays: 0,
-      totalMinutes: 0,
-    },
+    createdAt: tracker.createdAt.toISOString(),
+    entries: publicEntries,
+    stats: calculateStats(entries, today),
+    heatmap: buildHeatmap(entries, today),
   };
 }
 
@@ -107,7 +164,7 @@ export async function createTracker(
         return createdTracker;
       });
 
-      const publicTracker = toPublicTracker(tracker);
+      const publicTracker = toPublicTracker(tracker, []);
       return {
         tracker: publicTracker,
         publicPath: `/learn/${slug}`,
@@ -125,5 +182,7 @@ export async function createTracker(
 
 export async function getPublicTracker(slug: string): Promise<PublicTracker | undefined> {
   const tracker = await findTrackerBySlug(slug);
-  return tracker ? toPublicTracker(tracker) : undefined;
+  if (!tracker) return undefined;
+  const entries = await findEntriesByTracker(tracker.id);
+  return toPublicTracker(tracker, entries);
 }

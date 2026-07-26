@@ -8,6 +8,12 @@ export type TrackerStats = {
   totalMinutes: number;
 };
 
+export type TrackerActivityDay = {
+  date: string;
+  active: boolean;
+  minutesSpent: number | null;
+};
+
 export type TrackerEntry = {
   id: string;
   entryDate: string;
@@ -25,8 +31,10 @@ export type PublicTracker = {
   topic: string;
   description: string | null;
   timezone: string;
+  createdAt: string;
   stats: TrackerStats;
   entries: TrackerEntry[];
+  heatmap: TrackerActivityDay[];
 };
 
 export type CreateTrackerInput = TrackerCreationInput;

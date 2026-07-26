@@ -1,4 +1,5 @@
-import type { NormalizedTrackerCreationInput } from '@openlog/shared';
+﻿import type { NormalizedTrackerCreationInput } from '@openlog/shared';
+import type { ActivityDay, PublicEntry } from '../entries/entry.types';
 
 export type PublicTracker = {
   id: string;
@@ -7,13 +8,15 @@ export type PublicTracker = {
   topic: string;
   description: string | null;
   timezone: string;
-  entries: never[];
+  createdAt: string;
+  entries: PublicEntry[];
   stats: {
-    currentStreak: 0;
-    longestStreak: 0;
-    totalActiveDays: 0;
-    totalMinutes: 0;
+    currentStreak: number;
+    longestStreak: number;
+    totalActiveDays: number;
+    totalMinutes: number;
   };
+  heatmap: ActivityDay[];
 };
 
 export type CreateTrackerResult = {

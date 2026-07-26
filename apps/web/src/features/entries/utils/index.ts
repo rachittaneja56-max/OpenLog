@@ -1,0 +1,1 @@
+﻿export { formatEntryDate } from './date';

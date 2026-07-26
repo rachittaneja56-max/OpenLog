@@ -1,16 +1,9 @@
+﻿import type { EntryCreationInput, EntryUpdateInput } from '@openlog/shared';
 import { apiRequest } from '../../../lib/api-client';
 import type { TrackerEntry } from '../../trackers/api/tracker-api';
 
-export type CreateEntryInput = {
-  entryDate: string;
-  learned: string;
-  confusedAbout?: string;
-  nextStep?: string;
-  minutesSpent?: number;
-  resourceUrl?: string;
-};
-
-export type UpdateEntryInput = Partial<CreateEntryInput>;
+export type CreateEntryInput = EntryCreationInput;
+export type UpdateEntryInput = EntryUpdateInput;
 
 export async function createEntry(
   slug: string,

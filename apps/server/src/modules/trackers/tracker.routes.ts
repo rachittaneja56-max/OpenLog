@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+﻿import rateLimit from 'express-rate-limit';
 import { Router, type NextFunction, type Request, type Response } from 'express';
 import { ERROR_CODES } from '@openlog/shared';
 import { HttpError } from '../../errors/http-error';
@@ -9,6 +9,7 @@ import {
 } from './tracker.controller';
 import { getFieldErrors, trackerCreationSchema, trackerSlugParamSchema } from './tracker.schemas';
 import type { TrackerRouteLocals } from './tracker.types';
+import { entryRouter } from '../entries/entry.routes';
 
 export const trackerRouter = Router();
 
@@ -66,5 +67,6 @@ function validateTrackerSlug(
 }
 
 trackerRouter.post('/', trackerCreationLimiter, validateTrackerCreation, createTrackerController);
+trackerRouter.use('/:slug/entries', entryRouter);
 trackerRouter.get('/:slug/access', validateTrackerSlug, getOwnerAccessController);
 trackerRouter.get('/:slug', validateTrackerSlug, getPublicTrackerController);
