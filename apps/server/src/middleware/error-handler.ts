@@ -1,0 +1,26 @@
+import type { ErrorRequestHandler } from 'express';
+import { ERROR_CODES } from '@openlog/shared';
+import { HttpError } from '../errors/http-error';
+
+export const errorHandler: ErrorRequestHandler = (error, _request, response, _next): void => {
+  void _next;
+
+  if (error instanceof HttpError) {
+    response.status(error.statusCode).json({
+      success: false,
+      error: {
+        code: error.code,
+        message: error.message,
+      },
+    });
+    return;
+  }
+
+  response.status(500).json({
+    success: false,
+    error: {
+      code: ERROR_CODES.INTERNAL_SERVER_ERROR,
+      message: 'An unexpected server error occurred.',
+    },
+  });
+};

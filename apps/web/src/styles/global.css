@@ -1,0 +1,53 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: #f6f0df;
+    --foreground: #111111;
+    --surface: #fffdf5;
+    --muted: #ddd5c3;
+    --yellow: #ffd84d;
+    --pink: #ff6bcb;
+    --blue: #7dd3fc;
+    --green: #98f5a8;
+    --orange: #ff8a4c;
+    --purple: #b99cff;
+    --danger: #ff5c5c;
+    --border: #111111;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    @apply m-0 bg-background font-body text-foreground antialiased;
+    overflow-x: hidden;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-display uppercase tracking-tight;
+  }
+
+  :focus-visible {
+    outline: 4px solid var(--pink);
+    outline-offset: 4px;
+  }
+}
+
+@layer components {
+  .neo-box {
+    @apply border-[3px] border-border bg-surface shadow-neo;
+  }
+
+  .neo-button {
+    @apply neo-box font-bold uppercase transition-all duration-200 hover:translate-x-[2px] hover:translate-y-[2px] hover:shadow-neo-sm active:translate-x-[6px] active:translate-y-[6px] active:shadow-none;
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "openlog-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "pnpm --filter shared build && concurrently \"pnpm --filter web dev\" \"pnpm --filter server dev\"",
+    "build": "pnpm --filter shared build && pnpm --filter server build && pnpm --filter web build",
+    "typecheck": "pnpm --filter shared build && pnpm --recursive run typecheck",
+    "lint": "eslint . --ext .js,.ts,.tsx --report-unused-disable-directives --max-warnings 0",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^7.9.0",
+    "@typescript-eslint/parser": "^7.9.0",
+    "concurrently": "^8.2.2",
+    "eslint": "^8.57.0",
+    "prettier": "^3.2.5",
+    "typescript": "^5.4.5"
+  }
+}
