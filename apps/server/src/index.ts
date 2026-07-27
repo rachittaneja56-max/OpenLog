@@ -1,8 +1,8 @@
-﻿import { app } from './app';
+import { app } from './app';
 import { closeDatabaseConnection } from './database/client';
 import { env } from './config/env';
 
-const server = app.listen(env.PORT, () => {
+const server = app.listen(env.PORT, '0.0.0.0', () => {
   console.info(`OpenLog server listening on port ${env.PORT}.`);
 });
 
