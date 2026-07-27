@@ -82,6 +82,7 @@ export async function meController(
   next: NextFunction
 ): Promise<void> {
   try {
+    response.setHeader('Cache-Control', 'no-store');
     const user = response.locals.authUser;
     if (!user) {
       response.json({

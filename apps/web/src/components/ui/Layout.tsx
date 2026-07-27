@@ -1,7 +1,36 @@
-import { ArrowRight } from 'lucide-react';
-import { Link, Outlet } from 'react-router-dom';
+import { ArrowRight, LogOut } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useAuthMe, useLogout } from '../../features/auth/hooks';
+import { IconButton } from './controls';
 
 export function Layout(): JSX.Element {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const auth = useAuthMe();
+  const logout = useLogout();
+  const previousPath = useRef(location.pathname);
+
+  useEffect(() => {
+    if (previousPath.current === location.pathname) return;
+    previousPath.current = location.pathname;
+    auth.refetch();
+  }, [auth.refetch, location.pathname]);
+
+  const signOut = async (): Promise<void> => {
+    try {
+      await logout.mutate(undefined);
+      navigate('/login');
+    } catch {
+      // The safe mutation error is handled by the protected page when needed.
+    }
+  };
+
+  const signInPath =
+    location.pathname === '/login'
+      ? '/login'
+      : '/login?returnTo=' + encodeURIComponent(location.pathname + location.search);
+
   return (
     <div className="min-h-screen overflow-x-hidden">
       <header className="border-b-[3px] border-border bg-yellow px-5 py-4 md:px-10">
@@ -22,9 +51,42 @@ export function Layout(): JSX.Element {
             <a href="/#demo" className="hidden underline-offset-4 hover:underline sm:inline">
               Demo
             </a>
-            <Link to="/history" className="underline-offset-4 hover:underline">
-              My logs
-            </Link>
+            {auth.data?.authenticated ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  to="/history"
+                  className="inline-flex min-w-0 items-center gap-2 border-[3px] border-border bg-purple px-2 py-2 shadow-neo-sm"
+                  aria-label={'Open logs for ' + auth.data.user.username}
+                >
+                  <span
+                    className="inline-flex size-7 shrink-0 items-center justify-center border-2 border-border bg-surface font-mono text-[10px] font-bold"
+                    aria-hidden="true"
+                  >
+                    {auth.data.user.username.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="hidden max-w-28 truncate sm:inline">
+                    {auth.data.user.username}
+                  </span>
+                </Link>
+                <IconButton
+                  label="Sign out"
+                  size="small"
+                  className="bg-surface"
+                  disabled={logout.isPending}
+                  aria-busy={logout.isPending || undefined}
+                  onClick={() => void signOut()}
+                >
+                  <LogOut aria-hidden="true" size={16} strokeWidth={3} />
+                </IconButton>
+              </div>
+            ) : (
+              <Link
+                to={signInPath}
+                className="neo-button inline-flex items-center bg-surface px-3 py-2 shadow-neo-sm"
+              >
+                Sign in
+              </Link>
+            )}
             <a
               href="/#create-log"
               className="neo-button inline-flex items-center gap-2 bg-green px-3 py-2 shadow-neo-sm"

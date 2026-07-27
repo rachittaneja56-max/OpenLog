@@ -25,7 +25,7 @@ export type ClaimTrackerResult = {
 };
 
 export async function getCurrentUser(signal?: AbortSignal): Promise<AuthenticatedSession> {
-  return apiRequest<AuthenticatedSession>('/auth/me', { signal });
+  return apiRequest<AuthenticatedSession>('/auth/me', { signal, cache: 'no-store' });
 }
 
 export async function login(
