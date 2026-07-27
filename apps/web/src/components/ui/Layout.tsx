@@ -52,14 +52,14 @@ export function Layout(): JSX.Element {
               Demo
             </a>
             {auth.data?.authenticated ? (
-              <div className="flex items-center gap-2">
+              <div className="flex items-center border-[3px] border-border bg-purple p-1 shadow-neo-sm">
                 <Link
                   to="/history"
-                  className="inline-flex min-w-0 items-center gap-2 border-[3px] border-border bg-purple px-2 py-2 shadow-neo-sm"
+                  className="inline-flex min-w-0 items-center gap-2 px-1 py-1"
                   aria-label={'Open logs for ' + auth.data.user.username}
                 >
                   <span
-                    className="inline-flex size-7 shrink-0 items-center justify-center border-2 border-border bg-surface font-mono text-[10px] font-bold"
+                    className="inline-flex size-8 shrink-0 items-center justify-center border-2 border-border bg-surface font-mono text-[10px] font-bold"
                     aria-hidden="true"
                   >
                     {auth.data.user.username.slice(0, 2).toUpperCase()}
@@ -71,7 +71,7 @@ export function Layout(): JSX.Element {
                 <IconButton
                   label="Sign out"
                   size="small"
-                  className="bg-surface"
+                  className="border-2 bg-surface px-2 py-2 shadow-none hover:translate-x-0 hover:translate-y-0 hover:shadow-none active:translate-x-0 active:translate-y-0 active:shadow-none"
                   disabled={logout.isPending}
                   aria-busy={logout.isPending || undefined}
                   onClick={() => void signOut()}
