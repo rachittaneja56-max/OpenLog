@@ -1,3 +1,3 @@
-﻿import { trackerCreationSchema } from '@openlog/shared';
+import { trackerCreationSchema } from '@openlog/shared';
 
 export { trackerCreationSchema };

@@ -1,4 +1,5 @@
-﻿import type { ActivityDay, NormalizedTrackerCreationInput, StreakStats } from '@openlog/shared';
+import type { ActivityDay, NormalizedTrackerCreationInput, StreakStats } from '@openlog/shared';
+import type { AuthenticatedUser } from '../auth/auth.types';
 import type { PublicEntry } from '../entries/entry.types';
 
 export type PublicTracker = {
@@ -24,4 +25,5 @@ export type CreateTrackerResult = {
 export type TrackerRouteLocals = {
   trackerInput?: NormalizedTrackerCreationInput;
   slug?: string;
+  authUser?: AuthenticatedUser;
 };

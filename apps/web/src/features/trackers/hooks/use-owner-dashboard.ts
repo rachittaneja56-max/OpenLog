@@ -1,9 +1,10 @@
-﻿import type { ApiError } from '../../../lib/api-error';
+import type { ApiError } from '../../../lib/api-error';
 import { useOwnerAccess } from './use-owner-access';
 import { usePublicTracker } from './use-public-tracker';
 
 export type OwnerDashboardState = {
   tracker: ReturnType<typeof usePublicTracker>['data'];
+  access: ReturnType<typeof useOwnerAccess>['data'];
   isOwner: boolean;
   isTrackerLoading: boolean;
   isAccessLoading: boolean;
@@ -19,6 +20,7 @@ export function useOwnerDashboard(slug: string): OwnerDashboardState {
 
   return {
     tracker: tracker.data,
+    access: ownerAccess.data,
     isOwner: ownerAccess.data?.isOwner === true,
     isTrackerLoading: tracker.isLoading,
     isAccessLoading: ownerAccess.isLoading,

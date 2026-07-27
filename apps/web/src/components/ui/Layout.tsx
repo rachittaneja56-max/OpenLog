@@ -1,4 +1,4 @@
-﻿import { ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
 
 export function Layout(): JSX.Element {
@@ -12,7 +12,7 @@ export function Layout(): JSX.Element {
           <Link to="/" className="font-display text-2xl uppercase tracking-widest text-foreground">
             OpenLog
           </Link>
-          <div className="flex flex-wrap items-center justify-end gap-4 font-mono text-xs font-bold uppercase tracking-widest md:gap-6">
+          <div className="flex flex-wrap items-center justify-end gap-3 font-mono text-xs font-bold uppercase tracking-widest md:gap-5">
             <a
               href="/#how-it-works"
               className="hidden underline-offset-4 hover:underline sm:inline"
@@ -22,6 +22,9 @@ export function Layout(): JSX.Element {
             <a href="/#demo" className="hidden underline-offset-4 hover:underline sm:inline">
               Demo
             </a>
+            <Link to="/history" className="underline-offset-4 hover:underline">
+              My logs
+            </Link>
             <a
               href="/#create-log"
               className="neo-button inline-flex items-center gap-2 bg-green px-3 py-2 shadow-neo-sm"
@@ -39,7 +42,7 @@ export function Layout(): JSX.Element {
       <footer className="border-t-[3px] border-border bg-surface px-5 py-8 md:px-10">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
           <p className="font-mono font-bold">OpenLog &copy; {new Date().getFullYear()}</p>
-          <p className="font-mono uppercase tracking-widest">No login. No hiding.</p>
+          <p className="font-mono uppercase tracking-widest">Public logs. Private edit access.</p>
         </div>
       </footer>
     </div>

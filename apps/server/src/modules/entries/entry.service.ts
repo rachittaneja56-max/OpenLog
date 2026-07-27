@@ -1,4 +1,4 @@
-﻿import { ERROR_CODES, type EntryCreationInput, type EntryUpdateInput } from '@openlog/shared';
+import { ERROR_CODES, type EntryCreationInput, type EntryUpdateInput } from '@openlog/shared';
 import { HttpError } from '../../errors/http-error';
 import {
   deleteEntry as deleteEntryRecord,
@@ -9,7 +9,7 @@ import {
 } from '../../repositories/entry.repository';
 import { findTrackerBySlug } from '../../repositories/tracker.repository';
 import { getCalendarDateInTimezone } from '../../utils/calendar';
-import { checkOwnership } from '../ownership/ownership.service';
+import { getTrackerAccess } from '../ownership/ownership.service';
 import type { OwnerCookieSource } from '../ownership/ownership.types';
 import type { PublicEntry } from './entry.types';
 
@@ -32,9 +32,10 @@ function requireOwner(): never {
 
 async function loadOwnedTracker(
   slug: string,
-  cookies: OwnerCookieSource
+  cookies: OwnerCookieSource,
+  userId: string | undefined
 ): Promise<NonNullable<Awaited<ReturnType<typeof findTrackerBySlug>>>> {
-  const ownership = await checkOwnership(slug, cookies);
+  const ownership = await getTrackerAccess(slug, cookies, userId);
   if (!ownership.isOwner) requireOwner();
 
   const tracker = await findTrackerBySlug(slug);
@@ -65,9 +66,10 @@ export function toPublicEntry(entry: {
 export async function createEntry(
   slug: string,
   input: EntryCreationInput,
-  cookies: OwnerCookieSource
+  cookies: OwnerCookieSource,
+  userId: string | undefined
 ): Promise<PublicEntry> {
-  const tracker = await loadOwnedTracker(slug, cookies);
+  const tracker = await loadOwnedTracker(slug, cookies, userId);
   const entryDate = getCalendarDateInTimezone(tracker.timezone);
   const existingEntry = await findEntryByTrackerAndDate(tracker.id, entryDate);
   if (existingEntry) {
@@ -99,9 +101,10 @@ export async function updateEntry(
   slug: string,
   entryId: string,
   input: EntryUpdateInput,
-  cookies: OwnerCookieSource
+  cookies: OwnerCookieSource,
+  userId: string | undefined
 ): Promise<PublicEntry> {
-  const tracker = await loadOwnedTracker(slug, cookies);
+  const tracker = await loadOwnedTracker(slug, cookies, userId);
   const existingEntry = await findEntryById(entryId);
   if (!existingEntry || existingEntry.trackerId !== tracker.id) {
     throw new HttpError(404, ERROR_CODES.NOT_FOUND, 'Entry not found.');
@@ -115,9 +118,10 @@ export async function updateEntry(
 export async function deleteEntry(
   slug: string,
   entryId: string,
-  cookies: OwnerCookieSource
+  cookies: OwnerCookieSource,
+  userId: string | undefined
 ): Promise<void> {
-  const tracker = await loadOwnedTracker(slug, cookies);
+  const tracker = await loadOwnedTracker(slug, cookies, userId);
   const existingEntry = await findEntryById(entryId);
   if (!existingEntry || existingEntry.trackerId !== tracker.id) {
     throw new HttpError(404, ERROR_CODES.NOT_FOUND, 'Entry not found.');

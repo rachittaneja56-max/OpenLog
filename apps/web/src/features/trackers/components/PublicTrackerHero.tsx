@@ -1,4 +1,4 @@
-﻿import { Card, Sticker } from '../../../components/ui';
+import { Card, Sticker } from '../../../components/ui';
 import { formatEntryDate } from '../../entries/utils';
 import { formatTrackerCreatedDate } from '../utils';
 import { PublicShareActions } from '../../sharing/components';
@@ -33,7 +33,7 @@ export function PublicTrackerHero({ tracker, publicUrl }: PublicTrackerHeroProps
               <p className="font-mono text-xs font-bold uppercase tracking-widest">
                 PUBLIC LEARNING POSTER
               </p>
-              <Sticker tone="green">NO LOGIN REQUIRED</Sticker>
+              <Sticker tone="green">PUBLIC BY DEFAULT</Sticker>
             </div>
             <h1
               id="public-log-heading"

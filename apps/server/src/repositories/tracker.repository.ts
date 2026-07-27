@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, desc, eq, isNull } from 'drizzle-orm';
 import { db, type DatabaseExecutor } from '../database/client';
 import { trackers, type NewTracker, type Tracker } from '../database/schema/trackers';
 
@@ -23,4 +23,26 @@ export async function findTrackerById(id: string): Promise<Tracker | undefined> 
 export async function checkSlugExists(slug: string): Promise<boolean> {
   const tracker = await findTrackerBySlug(slug);
   return tracker !== undefined;
+}
+
+export async function findTrackersByOwnerUserId(userId: string): Promise<Tracker[]> {
+  return db
+    .select()
+    .from(trackers)
+    .where(eq(trackers.ownerUserId, userId))
+    .orderBy(desc(trackers.updatedAt));
+}
+
+export async function linkTrackerToUser(
+  trackerId: string,
+  userId: string,
+  database: DatabaseExecutor = db
+): Promise<Tracker | undefined> {
+  const [tracker] = await database
+    .update(trackers)
+    .set({ ownerUserId: userId, updatedAt: new Date() })
+    .where(and(eq(trackers.id, trackerId), isNull(trackers.ownerUserId)))
+    .returning();
+
+  return tracker;
 }

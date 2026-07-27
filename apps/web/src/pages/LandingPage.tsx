@@ -72,12 +72,12 @@ export function LandingPage(): JSX.Element {
   return (
     <div className="space-y-20 pb-8 md:space-y-28">
       <section
-        className="grid gap-10 lg:grid-cols-[1.08fr_0.92fr] lg:items-center"
+        className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.85fr)] lg:items-start xl:gap-16"
         aria-labelledby="hero-heading"
       >
-        <div className="min-w-0">
+        <div className="min-w-0 lg:pt-6">
           <Sticker tone="green" className="neo-sticker-entrance">
-            NO LOGIN REQUIRED
+            PUBLIC BY DEFAULT
           </Sticker>
           <h1
             id="hero-heading"
@@ -102,7 +102,7 @@ export function LandingPage(): JSX.Element {
           >
             START MY LOG {'\u2192'}
           </a>
-          <div className="mt-10 flex items-end gap-5 border-t-[3px] border-border pt-5">
+          <div className="mt-10 flex flex-col items-start gap-4 border-t-[3px] border-border pt-5 sm:flex-row sm:items-end sm:justify-between sm:gap-5">
             <div>
               <p className="font-mono text-[10px] font-bold uppercase tracking-widest">
                 A little proof, every day
@@ -113,7 +113,9 @@ export function LandingPage(): JSX.Element {
           </div>
         </div>
 
-        <TrackerCreationForm />
+        <div className="min-w-0 lg:justify-self-end">
+          <TrackerCreationForm />
+        </div>
       </section>
 
       <section id="demo" className="scroll-mt-8" aria-labelledby="demo-heading">
@@ -258,7 +260,7 @@ export function LandingPage(): JSX.Element {
       <footer className="flex flex-col gap-3 border-t-[3px] border-border pt-6 font-mono text-xs font-bold uppercase tracking-wide md:flex-row md:items-center md:justify-between">
         <span>OpenLog · Learn in public</span>
         <span className="flex items-center gap-2">
-          <Flame aria-hidden="true" size={15} strokeWidth={3} /> No login. No hiding.
+          <Flame aria-hidden="true" size={15} strokeWidth={3} /> Public logs. Private edit access.
         </span>
         <span className="flex items-center gap-2">
           <Globe2 aria-hidden="true" size={15} strokeWidth={3} /> Built for the long game{' '}

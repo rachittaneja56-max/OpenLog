@@ -1,4 +1,5 @@
-﻿import { ExternalLink } from 'lucide-react';
+import { ExternalLink } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Badge, Card, CopyButton, SectionHeading } from '../../../components/ui';
 import { formatTrackerCreatedDate } from '../utils';
 
@@ -12,6 +13,12 @@ export function DashboardHeader({ publicPath, publicUrl }: DashboardHeaderProps)
         <Badge tone="green">OWNER VIEW</Badge>
       </div>
       <div className="flex flex-wrap gap-3">
+        <Link
+          className="neo-button inline-flex items-center bg-surface px-3 py-2 text-xs"
+          to="/history"
+        >
+          My logs
+        </Link>
         <a
           className="neo-button inline-flex items-center gap-2 bg-surface px-3 py-2 text-xs"
           href={publicPath}

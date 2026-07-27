@@ -1,8 +1,8 @@
-﻿import type { NextFunction, Request, Response } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { ERROR_CODES, type ApiResponse } from '@openlog/shared';
 import { HttpError } from '../../errors/http-error';
 import { setOwnerCookie } from '../ownership/owner-cookie';
-import { checkOwnership } from '../ownership/ownership.service';
+import { getTrackerAccess } from '../ownership/ownership.service';
 import { createTracker, getPublicTracker } from './tracker.service';
 import type { CreateTrackerResult, PublicTracker, TrackerRouteLocals } from './tracker.types';
 
@@ -12,7 +12,11 @@ export type CreateTrackerResponse = {
   dashboardPath: string;
 };
 
-type OwnershipResponse = { isOwner: boolean };
+type OwnershipResponse = {
+  isOwner: boolean;
+  requiresLogin: boolean;
+  canClaim: boolean;
+};
 
 export async function createTrackerController(
   _request: Request,
@@ -26,8 +30,9 @@ export async function createTrackerController(
       return;
     }
 
-    const result: CreateTrackerResult = await createTracker(input);
+    const result: CreateTrackerResult = await createTracker(input, response.locals.authUser?.id);
     setOwnerCookie(response, result.trackerId, result.ownerToken);
+
     response.status(201).json({
       success: true,
       data: {
@@ -77,8 +82,12 @@ export async function getOwnerAccessController(
       return;
     }
 
-    const ownership = await checkOwnership(slug, request.cookies ?? {});
-    response.json({ success: true, data: ownership });
+    const access = await getTrackerAccess(
+      slug,
+      request.cookies ?? {},
+      response.locals.authUser?.id
+    );
+    response.json({ success: true, data: access });
   } catch (error: unknown) {
     next(error);
   }

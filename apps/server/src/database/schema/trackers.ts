@@ -1,9 +1,11 @@
 import { pgTable, text, timestamp, uuid, unique } from 'drizzle-orm/pg-core';
+import { users } from './users';
 
 export const trackers = pgTable(
   'trackers',
   {
     id: uuid('id').defaultRandom().primaryKey(),
+    ownerUserId: uuid('owner_user_id').references(() => users.id, { onDelete: 'set null' }),
     slug: text('slug').notNull(),
     displayName: text('display_name'),
     topic: text('topic').notNull(),

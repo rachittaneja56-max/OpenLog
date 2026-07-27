@@ -1,4 +1,5 @@
-﻿import type { EntryCreationInput, EntryUpdateInput } from '@openlog/shared';
+import type { EntryCreationInput, EntryUpdateInput } from '@openlog/shared';
+import type { AuthenticatedUser } from '../auth/auth.types';
 
 export type PublicEntry = {
   id: string;
@@ -15,4 +16,5 @@ export type EntryRouteLocals = {
   entryId?: string;
   entryInput?: EntryCreationInput;
   entryUpdateInput?: EntryUpdateInput;
+  authUser?: AuthenticatedUser;
 };

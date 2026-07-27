@@ -2,9 +2,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { trackerCreationSchema, type TrackerCreationInput } from '@openlog/shared';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Textarea, TextInput } from '../../../components/ui';
 import { useToast } from '../../../app/providers';
+import { Button, Card, Textarea, TextInput } from '../../../components/ui';
 import { isApiError } from '../../../lib/api-error';
+import { useAuthMe } from '../../auth/hooks';
 import { useCreateTracker } from '../hooks/use-create-tracker';
 
 const trackerFields = ['displayName', 'topic', 'description', 'timezone'] as const;
@@ -18,6 +19,7 @@ function getTimezone(): string {
 export function TrackerCreationForm(): JSX.Element {
   const navigate = useNavigate();
   const toast = useToast();
+  const auth = useAuthMe();
   const creation = useCreateTracker();
   const form = useForm<TrackerCreationInput>({
     resolver: zodResolver(trackerCreationSchema),
@@ -28,12 +30,23 @@ export function TrackerCreationForm(): JSX.Element {
       timezone: getTimezone(),
     },
   });
+  const isAuthenticated = auth.data?.authenticated === true;
+  const isCheckingAuth = auth.isLoading && !auth.data;
 
   const onSubmit = async (values: TrackerCreationInput): Promise<void> => {
     try {
       const result = await creation.mutate(values);
-      toast.notify('Your log is live. Your owner dashboard is ready.');
-      navigate(result.dashboardPath);
+      toast.notify(
+        isAuthenticated
+          ? 'Your log is live and ready to edit.'
+          : 'Your log is live. Sign in to edit and keep it in your history.'
+      );
+
+      if (isAuthenticated) {
+        navigate(result.dashboardPath);
+      } else {
+        navigate('/login?returnTo=' + encodeURIComponent(result.dashboardPath));
+      }
     } catch (error: unknown) {
       if (!isApiError(error) || !error.fieldErrors) return;
       for (const field of trackerFields) {
@@ -99,11 +112,20 @@ export function TrackerCreationForm(): JSX.Element {
             {errorMessage}
           </p>
         ) : null}
-        <Button type="submit" loading={creation.isPending} className="w-full">
-          {creation.isPending ? 'Creating your log' : 'Start my log →'}
+        <Button
+          type="submit"
+          loading={creation.isPending || isCheckingAuth}
+          disabled={isCheckingAuth}
+          className="w-full"
+        >
+          {isCheckingAuth
+            ? 'Checking access'
+            : creation.isPending
+              ? 'Creating your log'
+              : 'Start my log \u2192'}
         </Button>
         <p className="text-center font-mono text-[11px] font-bold uppercase tracking-wide">
-          No login required · Your owner access stays in this browser
+          PUBLIC LOG / SIGN IN TO EDIT
         </p>
       </form>
     </Card>

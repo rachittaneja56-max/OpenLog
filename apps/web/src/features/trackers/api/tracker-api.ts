@@ -1,4 +1,4 @@
-﻿import type { ActivityDay, StreakStats, TrackerCreationInput } from '@openlog/shared';
+import type { ActivityDay, StreakStats, TrackerCreationInput } from '@openlog/shared';
 import { apiRequest } from '../../../lib/api-client';
 
 export type TrackerStats = StreakStats;
@@ -36,6 +36,8 @@ export type CreatedTracker = {
 
 export type OwnerAccess = {
   isOwner: boolean;
+  requiresLogin: boolean;
+  canClaim: boolean;
 };
 
 export async function createTracker(
@@ -50,9 +52,9 @@ export async function createTracker(
 }
 
 export async function getPublicTracker(slug: string, signal?: AbortSignal): Promise<PublicTracker> {
-  return apiRequest<PublicTracker>(`/trackers/${encodeURIComponent(slug)}`, { signal });
+  return apiRequest<PublicTracker>('/trackers/' + encodeURIComponent(slug), { signal });
 }
 
 export async function getOwnerAccess(slug: string, signal?: AbortSignal): Promise<OwnerAccess> {
-  return apiRequest<OwnerAccess>(`/trackers/${encodeURIComponent(slug)}/access`, { signal });
+  return apiRequest<OwnerAccess>('/trackers/' + encodeURIComponent(slug) + '/access', { signal });
 }

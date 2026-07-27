@@ -1,15 +1,20 @@
-﻿import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
+import {
+  buildActivityDays,
+  calculateStreakStats,
+  ERROR_CODES,
+  type NormalizedTrackerCreationInput,
+} from '@openlog/shared';
 import type { Entry } from '../../database/schema/entries';
-import { buildActivityDays, calculateStreakStats, type StreakEntry } from '@openlog/shared';
 import { db } from '../../database/client';
-import { insertOwnerAccess } from '../../repositories/owner-access.repository';
+import { HttpError } from '../../errors/http-error';
 import { findEntriesByTracker } from '../../repositories/entry.repository';
+import { insertOwnerAccess } from '../../repositories/owner-access.repository';
 import {
   checkSlugExists,
   findTrackerBySlug,
   insertTracker,
 } from '../../repositories/tracker.repository';
-import type { NormalizedTrackerCreationInput } from '@openlog/shared';
 import { getCalendarDateInTimezone } from '../../utils/calendar';
 import { toPublicEntry } from '../entries/entry.service';
 import type { PublicEntry } from '../entries/entry.types';
@@ -38,7 +43,7 @@ function createSlug(input: NormalizedTrackerCreationInput): string {
     .replace(/[^a-z0-9]/g, '')
     .slice(0, 4)
     .padEnd(4, '0');
-  return `${createSlugBase(input)}-${suffix}`;
+  return createSlugBase(input) + '-' + suffix;
 }
 
 function createOwnerToken(): string {
@@ -62,11 +67,12 @@ function toPublicTracker(
   entries: Entry[]
 ): PublicTracker {
   const today = getCalendarDateInTimezone(tracker.timezone);
-  const streakEntries: StreakEntry[] = entries.map((entry) => ({
+  const streakEntries = entries.map((entry) => ({
     entryDate: entry.entryDate,
     minutesSpent: entry.minutesSpent,
   }));
   const publicEntries: PublicEntry[] = entries.map(toPublicEntry);
+
   return {
     slug: tracker.slug,
     displayName: tracker.displayName,
@@ -86,7 +92,8 @@ function isUniqueViolation(error: unknown): boolean {
 }
 
 export async function createTracker(
-  input: NormalizedTrackerCreationInput
+  input: NormalizedTrackerCreationInput,
+  ownerUserId?: string
 ): Promise<CreateTrackerResult> {
   for (let attempt = 0; attempt < MAX_SLUG_ATTEMPTS; attempt += 1) {
     const slug = createSlug(input);
@@ -99,6 +106,7 @@ export async function createTracker(
       const tracker = await db.transaction(async (transaction) => {
         const createdTracker = await insertTracker(
           {
+            ownerUserId: ownerUserId ?? null,
             slug,
             displayName: input.displayName ?? null,
             topic: input.topic,
@@ -123,8 +131,8 @@ export async function createTracker(
       return {
         tracker: publicTracker,
         trackerId: tracker.id,
-        publicPath: `/learn/${slug}`,
-        dashboardPath: `/dashboard/${slug}`,
+        publicPath: '/learn/' + slug,
+        dashboardPath: '/dashboard/' + slug,
         ownerToken,
       };
     } catch (error: unknown) {
@@ -133,7 +141,11 @@ export async function createTracker(
     }
   }
 
-  throw new Error('Could not allocate a unique tracker slug.');
+  throw new HttpError(
+    503,
+    ERROR_CODES.INTERNAL_SERVER_ERROR,
+    'Could not create the learning log right now.'
+  );
 }
 
 export async function getPublicTracker(slug: string): Promise<PublicTracker | undefined> {

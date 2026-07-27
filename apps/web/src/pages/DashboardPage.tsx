@@ -1,7 +1,8 @@
-﻿import { buildActivityMonthLabels, type EntryCreationInput } from '@openlog/shared';
+import { buildActivityMonthLabels, type EntryCreationInput } from '@openlog/shared';
 import { useCallback, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useToast } from '../app/providers';
+import { ClaimTrackerForm } from '../features/auth/components';
 import {
   Button,
   Card,
@@ -32,19 +33,25 @@ function toUpdateInput(values: EntryCreationInput): UpdateEntryInput {
 
 function AccessGate({
   publicPath,
+  loginPath,
   onRetry,
 }: {
   publicPath: string;
+  loginPath: string;
   onRetry: () => void;
 }): JSX.Element {
   return (
     <Card variant="orange" className="mx-auto max-w-2xl text-center">
-      <p className="font-mono text-xs font-bold uppercase tracking-widest">OWNER VIEW</p>
-      <h1 className="mt-3 text-4xl">This log is not yours to edit.</h1>
+      <p className="font-mono text-xs font-bold uppercase tracking-widest">PRIVATE EDIT ACCESS</p>
+      <h1 className="mt-3 text-4xl">Sign in to edit this log.</h1>
       <p className="mx-auto mt-4 max-w-lg font-medium leading-relaxed">
-        Owner access is available only in the browser that created this learning log.
+        Public learning logs are open to everyone. Editing is reserved for the account that owns
+        this log.
       </p>
       <div className="mt-7 flex flex-wrap justify-center gap-3">
+        <Link className="neo-button inline-flex items-center bg-green px-4 py-3" to={loginPath}>
+          Sign in to edit
+        </Link>
         <Link className="neo-button inline-flex items-center bg-surface px-4 py-3" to={publicPath}>
           View public log
         </Link>
@@ -129,8 +136,14 @@ export function DashboardPage(): JSX.Element {
       />
     );
   }
+  if (dashboard.access?.canClaim) {
+    return <ClaimTrackerForm slug={slug} onClaimed={dashboard.refetchAccess} />;
+  }
   if (!dashboard.isOwner) {
-    return <AccessGate publicPath={publicPath} onRetry={dashboard.refetchAccess} />;
+    const loginPath = '/login?returnTo=' + encodeURIComponent('/dashboard/' + slug);
+    return (
+      <AccessGate publicPath={publicPath} loginPath={loginPath} onRetry={dashboard.refetchAccess} />
+    );
   }
   if (!dashboard.tracker) {
     return (

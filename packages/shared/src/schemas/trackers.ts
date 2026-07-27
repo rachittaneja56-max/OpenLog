@@ -17,7 +17,7 @@ const optionalText = (maximum: number) =>
     .transform((value) => (value.length > 0 ? value : undefined))
     .optional();
 
-export const trackerCreationSchema = z
+const trackerFieldsSchema = z
   .object({
     displayName: optionalText(60),
     topic: z.string().trim().min(2).max(100),
@@ -28,13 +28,14 @@ export const trackerCreationSchema = z
       .min(1)
       .refine(isValidIanaTimezone, 'Must be a valid IANA timezone.'),
   })
-  .strict()
-  .transform((input) => ({
-    displayName: input.displayName,
-    topic: input.topic,
-    description: input.description,
-    timezone: input.timezone,
-  }));
+  .strict();
+
+export const trackerCreationSchema = trackerFieldsSchema.transform((input) => ({
+  displayName: input.displayName,
+  topic: input.topic,
+  description: input.description,
+  timezone: input.timezone,
+}));
 
 export type TrackerCreationInput = z.input<typeof trackerCreationSchema>;
 export type NormalizedTrackerCreationInput = z.output<typeof trackerCreationSchema>;
