@@ -1,4 +1,4 @@
-import { zodResolver } from '@hookform/resolvers/zod';
+﻿import { zodResolver } from '@hookform/resolvers/zod';
 import { entryCreationSchema, type EntryCreationInput } from '@openlog/shared';
 import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
@@ -25,6 +25,7 @@ type EntryFormProps = {
   initialEntry?: TrackerEntry;
   submitLabel: string;
   isPending: boolean;
+  pendingLabel?: string;
   error: ApiError | null;
   onSubmit: (values: EntryCreationInput) => Promise<void>;
   onCancel?: () => void;
@@ -44,6 +45,7 @@ export function EntryForm({
   initialEntry,
   submitLabel,
   isPending,
+  pendingLabel = 'Saving entry',
   error,
   onSubmit,
   onCancel,
@@ -127,7 +129,7 @@ export function EntryForm({
       ) : null}
       <div className="flex flex-wrap gap-3">
         <Button type="submit" loading={isPending}>
-          {isPending ? 'Saving entry' : submitLabel}
+          {isPending ? pendingLabel : submitLabel}
         </Button>
         {onCancel ? (
           <Button type="button" variant="ghost" onClick={onCancel} disabled={isPending}>

@@ -7,25 +7,9 @@ import {
   deleteEntryController,
   updateEntryController,
 } from './entry.controller';
-import {
-  entryCreationSchema,
-  entryIdParamSchema,
-  entryUpdateSchema,
-  getFieldErrors,
-} from './entry.schemas';
+import { entryCreationSchema, entryIdParamSchema, entryUpdateSchema } from './entry.schemas';
 import type { EntryRouteLocals } from './entry.types';
-import { z } from 'zod';
-
-const slugParamSchema = z
-  .object({
-    slug: z
-      .string()
-      .trim()
-      .min(1)
-      .max(120)
-      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
-  })
-  .strict();
+import { getFieldErrors, trackerSlugParamSchema } from '../../utils/validation';
 
 export const entryRouter = Router({ mergeParams: true });
 
@@ -34,7 +18,7 @@ function validateSlug(
   response: Response<unknown, EntryRouteLocals>,
   next: NextFunction
 ): void {
-  const parsed = slugParamSchema.safeParse({ slug: request.params.slug });
+  const parsed = trackerSlugParamSchema.safeParse({ slug: request.params.slug });
   if (!parsed.success) {
     next(new HttpError(400, ERROR_CODES.INVALID_REQUEST, 'Invalid tracker slug.'));
     return;

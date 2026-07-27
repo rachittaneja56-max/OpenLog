@@ -8,12 +8,3 @@ export const entryIdParamSchema = z
     entryId: z.string().uuid(),
   })
   .strict();
-
-export function getFieldErrors(error: z.ZodError): Record<string, string[]> {
-  return error.issues.reduce<Record<string, string[]>>((fieldErrors, issue) => {
-    const field = issue.path[0];
-    if (typeof field !== 'string') return fieldErrors;
-    fieldErrors[field] = [...(fieldErrors[field] ?? []), issue.message];
-    return fieldErrors;
-  }, {});
-}

@@ -1,4 +1,4 @@
-import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
+﻿import { forwardRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
 import { LoaderCircle } from 'lucide-react';
 import { cn } from '../../lib/cn';
 
@@ -87,6 +87,7 @@ export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(functio
 
 type FieldProps = {
   id?: string;
+  descriptionId?: string;
   label: string;
   helperText?: string;
   error?: string;
@@ -96,6 +97,7 @@ type FieldProps = {
 
 export function FormField({
   id,
+  descriptionId,
   label,
   helperText,
   error,
@@ -109,11 +111,13 @@ export function FormField({
       </label>
       {children}
       {error ? (
-        <p className="font-mono text-xs font-bold text-danger" role="alert">
+        <p id={descriptionId} className="font-mono text-xs font-bold text-danger" role="alert">
           {error}
         </p>
       ) : helperText ? (
-        <p className="font-mono text-xs font-bold text-foreground/70">{helperText}</p>
+        <p id={descriptionId} className="font-mono text-xs font-bold text-foreground/70">
+          {helperText}
+        </p>
       ) : null}
     </div>
   );
@@ -132,13 +136,23 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputProps>(function T
   { id, label, helperText, error, required, className, ...props },
   ref
 ) {
+  const descriptionId = id && (error || helperText) ? `${id}-description` : undefined;
+
   return (
-    <FormField id={id} label={label} helperText={helperText} error={error} required={required}>
+    <FormField
+      id={id}
+      descriptionId={descriptionId}
+      label={label}
+      helperText={helperText}
+      error={error}
+      required={required}
+    >
       <input
         ref={ref}
         id={id}
         className={cn('neo-input', error && 'neo-input-error', className)}
         aria-invalid={error ? true : undefined}
+        aria-describedby={descriptionId}
         {...props}
       />
     </FormField>
@@ -151,13 +165,23 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaProps>(function 
   { id, label, helperText, error, required, className, ...props },
   ref
 ) {
+  const descriptionId = id && (error || helperText) ? `${id}-description` : undefined;
+
   return (
-    <FormField id={id} label={label} helperText={helperText} error={error} required={required}>
+    <FormField
+      id={id}
+      descriptionId={descriptionId}
+      label={label}
+      helperText={helperText}
+      error={error}
+      required={required}
+    >
       <textarea
         ref={ref}
         id={id}
         className={cn('neo-input min-h-28 resize-y', error && 'neo-input-error', className)}
         aria-invalid={error ? true : undefined}
+        aria-describedby={descriptionId}
         {...props}
       />
     </FormField>
@@ -177,13 +201,23 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(function Select
   { id, label, helperText, error, required, className, options, ...props },
   ref
 ) {
+  const descriptionId = id && (error || helperText) ? `${id}-description` : undefined;
+
   return (
-    <FormField id={id} label={label} helperText={helperText} error={error} required={required}>
+    <FormField
+      id={id}
+      descriptionId={descriptionId}
+      label={label}
+      helperText={helperText}
+      error={error}
+      required={required}
+    >
       <select
         ref={ref}
         id={id}
         className={cn('neo-input', error && 'neo-input-error', className)}
         aria-invalid={error ? true : undefined}
+        aria-describedby={descriptionId}
         {...props}
       >
         {options.map((option) => (

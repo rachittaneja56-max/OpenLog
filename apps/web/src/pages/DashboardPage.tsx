@@ -1,4 +1,4 @@
-import { buildActivityMonthLabels, type EntryCreationInput } from '@openlog/shared';
+﻿import { buildActivityMonthLabels, type EntryCreationInput } from '@openlog/shared';
 import { useCallback, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useToast } from '../app/providers';
@@ -13,6 +13,7 @@ import {
   StatCard,
 } from '../components/ui';
 import { EntryForm, EntryHistory } from '../features/entries/components';
+import { scrollToEntry } from '../features/entries/utils';
 import { useCreateEntry, useDeleteEntry, useUpdateEntry } from '../features/entries/hooks';
 import type { UpdateEntryInput } from '../features/entries/api/entry-api';
 import { DashboardHeader, GoalSummary, TrackerHeatmap } from '../features/trackers/components';
@@ -81,9 +82,7 @@ export function DashboardPage(): JSX.Element {
     (date: string): void => {
       const entryId = entryIdsByDate[date];
       if (!entryId) return;
-      const entryElement = document.getElementById(`entry-${entryId}`);
-      entryElement?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-      entryElement?.focus({ preventScroll: true });
+      scrollToEntry(entryId);
     },
     [entryIdsByDate]
   );
@@ -91,7 +90,7 @@ export function DashboardPage(): JSX.Element {
   const createTodayEntry = async (values: EntryCreationInput): Promise<void> => {
     await createMutation.mutate({ slug, input: values });
     await dashboard.refreshTracker();
-    toast.notify('Today’s learning is logged.');
+    toast.notify("Today's learning is logged.");
   };
 
   const updateExistingEntry = async (values: EntryCreationInput): Promise<void> => {
@@ -110,17 +109,34 @@ export function DashboardPage(): JSX.Element {
     toast.notify('Entry deleted.');
   };
 
-  if (dashboard.isLoading && !dashboard.tracker)
+  if (dashboard.isTrackerLoading && !dashboard.tracker) {
+    return <LoadingBlock label="Loading dashboard" />;
+  }
+  if (dashboard.trackerError && !dashboard.tracker) {
+    return (
+      <ErrorState description={dashboard.trackerError.message} onRetry={dashboard.refreshTracker} />
+    );
+  }
+  if (dashboard.isAccessLoading) {
     return <LoadingBlock label="Checking owner access" />;
-  if (!dashboard.isOwner)
-    return <AccessGate publicPath={publicPath} onRetry={dashboard.refetchAccess} />;
-  if (dashboard.error || !dashboard.tracker)
+  }
+  if (dashboard.accessError) {
     return (
       <ErrorState
-        description={dashboard.error?.message ?? 'This tracker is not available.'}
-        onRetry={dashboard.refreshTracker}
+        title="Could not verify owner access"
+        description={dashboard.accessError.message}
+        onRetry={dashboard.refetchAccess}
       />
     );
+  }
+  if (!dashboard.isOwner) {
+    return <AccessGate publicPath={publicPath} onRetry={dashboard.refetchAccess} />;
+  }
+  if (!dashboard.tracker) {
+    return (
+      <ErrorState description="This tracker is not available." onRetry={dashboard.refreshTracker} />
+    );
+  }
 
   const tracker = dashboard.tracker;
 
@@ -142,7 +158,7 @@ export function DashboardPage(): JSX.Element {
         {tracker.stats.hasLoggedToday ? (
           <Card variant="green">
             <SectionHeading id="today-entry-heading" eyebrow="TODAY COMPLETE">
-              TODAY’S ENTRY
+              TODAY'S ENTRY
             </SectionHeading>
             <p className="mt-5 text-2xl font-bold uppercase">You showed up today.</p>
             <p className="mt-3 font-medium leading-relaxed">
@@ -153,14 +169,15 @@ export function DashboardPage(): JSX.Element {
         ) : (
           <Card variant="green">
             <SectionHeading id="today-entry-heading" eyebrow="LOG TODAY TO CONTINUE">
-              TODAY’S ENTRY
+              TODAY'S ENTRY
             </SectionHeading>
             <p className="mb-7 mt-4 font-medium">
               Write down the useful thing before the day gets away.
             </p>
             <EntryForm
-              submitLabel="LOG TODAY’S LEARNING"
+              submitLabel="LOG TODAY'S LEARNING"
               isPending={createMutation.isPending}
+              pendingLabel="LOGGING TODAY'S LEARNING"
               error={createMutation.error}
               onSubmit={createTodayEntry}
             />
@@ -239,6 +256,7 @@ export function DashboardPage(): JSX.Element {
           initialEntry={editingEntry ?? undefined}
           submitLabel="SAVE CHANGES"
           isPending={updateMutation.isPending}
+          pendingLabel="SAVING CHANGES"
           error={updateMutation.error}
           onSubmit={updateExistingEntry}
           onCancel={() => setEditingEntry(null)}
@@ -264,7 +282,7 @@ export function DashboardPage(): JSX.Element {
             loading={deleteMutation.isPending}
             onClick={() => void confirmDelete()}
           >
-            DELETE ENTRY
+            {deleteMutation.isPending ? 'DELETING ENTRY' : 'DELETE ENTRY'}
           </Button>
           <Button
             variant="ghost"

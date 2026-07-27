@@ -1,4 +1,4 @@
-import { ArrowRight } from 'lucide-react';
+﻿import { ArrowRight } from 'lucide-react';
 import { Link, Outlet } from 'react-router-dom';
 
 export function Layout(): JSX.Element {
@@ -38,7 +38,7 @@ export function Layout(): JSX.Element {
       </main>
       <footer className="border-t-[3px] border-border bg-surface px-5 py-8 md:px-10">
         <div className="mx-auto flex max-w-6xl flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
-          <p className="font-mono font-bold">OpenLog © {new Date().getFullYear()}</p>
+          <p className="font-mono font-bold">OpenLog &copy; {new Date().getFullYear()}</p>
           <p className="font-mono uppercase tracking-widest">No login. No hiding.</p>
         </div>
       </footer>

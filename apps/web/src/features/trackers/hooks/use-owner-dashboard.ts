@@ -5,8 +5,10 @@ import { usePublicTracker } from './use-public-tracker';
 export type OwnerDashboardState = {
   tracker: ReturnType<typeof usePublicTracker>['data'];
   isOwner: boolean;
-  isLoading: boolean;
-  error: ApiError | null;
+  isTrackerLoading: boolean;
+  isAccessLoading: boolean;
+  trackerError: ApiError | null;
+  accessError: ApiError | null;
   refreshTracker: () => void;
   refetchAccess: () => void;
 };
@@ -18,8 +20,10 @@ export function useOwnerDashboard(slug: string): OwnerDashboardState {
   return {
     tracker: tracker.data,
     isOwner: ownerAccess.data?.isOwner === true,
-    isLoading: tracker.isLoading || ownerAccess.isLoading,
-    error: tracker.error ?? ownerAccess.error,
+    isTrackerLoading: tracker.isLoading,
+    isAccessLoading: ownerAccess.isLoading,
+    trackerError: tracker.error,
+    accessError: ownerAccess.error,
     refreshTracker: tracker.refetch,
     refetchAccess: ownerAccess.refetch,
   };

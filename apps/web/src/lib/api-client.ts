@@ -1,4 +1,4 @@
-import type { ApiFailure, ApiResponse } from '@openlog/shared';
+﻿import type { ApiFailure, ApiResponse } from '@openlog/shared';
 import { ApiError, toApiError } from './api-error';
 
 const API_PREFIX = '/api';
@@ -51,6 +51,14 @@ function isApiResponse<T>(value: unknown): value is ApiResponseData<T> {
   return response.success === true || response.success === false;
 }
 
+function serializeRequestBody(body: unknown): string {
+  try {
+    return JSON.stringify(body);
+  } catch {
+    throw new ApiError('api', 'REQUEST_SERIALIZATION_FAILED');
+  }
+}
+
 export async function apiRequest<T>(path: string, options: ApiRequestOptions = {}): Promise<T> {
   const { body, headers: suppliedHeaders, ...requestInit } = options;
   const headers = new Headers(suppliedHeaders);
@@ -63,7 +71,7 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   try {
     response = await fetch(getApiPath(path), {
       ...requestInit,
-      body: body === undefined ? undefined : JSON.stringify(body),
+      body: body === undefined ? undefined : serializeRequestBody(body),
       credentials: 'include',
       headers,
     });
@@ -71,7 +79,13 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
     throw toApiError(error);
   }
 
-  const text = await response.text();
+  let text: string;
+  try {
+    text = await response.text();
+  } catch (error) {
+    throw toApiError(error);
+  }
+
   const parsed = parseResponseBody(text, response.status);
 
   if (!response.ok) {

@@ -1,5 +1,6 @@
 ﻿import { ExternalLink } from 'lucide-react';
 import { Badge, Card, CopyButton, SectionHeading } from '../../../components/ui';
+import { formatTrackerCreatedDate } from '../utils';
 
 type DashboardHeaderProps = { publicPath: string; publicUrl: string };
 
@@ -51,7 +52,7 @@ export function GoalSummary({
       ) : null}
       <div className="mt-7 flex flex-wrap gap-3 font-mono text-xs font-bold uppercase">
         <span className="border-2 border-border bg-surface px-2 py-1">
-          Started {new Date(createdAt).toLocaleDateString()}
+          Started {formatTrackerCreatedDate(createdAt, timezone)}
         </span>
         <span className="border-2 border-border bg-yellow px-2 py-1">{timezone}</span>
       </div>

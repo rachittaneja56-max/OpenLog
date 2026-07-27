@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type DependencyList } from 'react';
+﻿import { useCallback, useEffect, useRef, useState, type DependencyList } from 'react';
 import { ApiError, toApiError } from '../lib/api-error';
 import type { RequestState } from '../lib/request-state';
 
@@ -97,6 +97,14 @@ export function useRequestMutation<TVariables, TData>(
       }
     },
     [mutation]
+  );
+
+  useEffect(
+    () => () => {
+      controllerRef.current?.abort();
+      requestIdRef.current += 1;
+    },
+    []
   );
 
   const reset = useCallback(() => {

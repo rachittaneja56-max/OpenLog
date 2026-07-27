@@ -7,7 +7,8 @@ import {
   getOwnerAccessController,
   getPublicTrackerController,
 } from './tracker.controller';
-import { getFieldErrors, trackerCreationSchema, trackerSlugParamSchema } from './tracker.schemas';
+import { trackerCreationSchema } from './tracker.schemas';
+import { getFieldErrors, trackerSlugParamSchema } from '../../utils/validation';
 import type { TrackerRouteLocals } from './tracker.types';
 import { entryRouter } from '../entries/entry.routes';
 

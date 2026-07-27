@@ -1,10 +1,10 @@
-import path from 'node:path';
+﻿import path from 'node:path';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import express, { type NextFunction, type Request, type Response } from 'express';
 import helmet from 'helmet';
-import morgan from 'morgan';
+import { requestLogger } from './middleware/request-logger';
 import { env } from './config/env';
 import { errorHandler } from './middleware/error-handler';
 import { apiNotFoundHandler, frontendNotFoundHandler } from './middleware/not-found';
@@ -12,13 +12,35 @@ import { apiRouter } from './routes/api.routes';
 
 export const app = express();
 
+if (env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 app.disable('x-powered-by');
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        baseUri: ["'self'"],
+        defaultSrc: ["'self'"],
+        fontSrc: ["'self'", 'data:', 'https://fonts.gstatic.com'],
+        formAction: ["'self'"],
+        frameAncestors: ["'self'"],
+        imgSrc: ["'self'", 'data:'],
+        objectSrc: ["'none'"],
+        scriptSrc: ["'self'"],
+        scriptSrcAttr: ["'none'"],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://fonts.googleapis.com'],
+        upgradeInsecureRequests: [],
+      },
+    },
+  })
+);
 app.use(compression());
 app.use(cookieParser());
 app.use(express.json({ limit: '32kb' }));
 app.use(express.urlencoded({ extended: true, limit: '32kb' }));
-app.use(morgan(env.NODE_ENV === 'production' ? 'combined' : 'dev'));
+app.use(requestLogger);
 
 if (env.NODE_ENV === 'development') {
   const localOrigins = [env.CLIENT_ORIGIN, 'http://localhost:5173', 'http://127.0.0.1:5173'].filter(
