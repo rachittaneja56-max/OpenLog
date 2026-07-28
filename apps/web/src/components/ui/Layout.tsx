@@ -1,4 +1,4 @@
-import { ArrowRight, LogOut } from 'lucide-react';
+﻿import { ArrowRight, BookOpen, LogOut } from 'lucide-react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthMe, useLogout } from '../../features/auth/hooks';
 import { IconButton } from './controls';
@@ -55,33 +55,43 @@ export function Layout(): JSX.Element {
               <ArrowRight aria-hidden="true" size={15} strokeWidth={3} />
             </a>
             {auth.data?.authenticated ? (
-              <div className="flex shrink-0 items-center border-[3px] border-border bg-purple p-1 shadow-neo-sm">
-                <IconButton
-                  label="Sign out"
-                  size="small"
-                  className="border-2 bg-surface px-2 py-2 shadow-none hover:translate-x-0 hover:translate-y-0 hover:shadow-none active:translate-x-0 active:translate-y-0 active:shadow-none"
-                  disabled={logout.isPending}
-                  aria-busy={logout.isPending || undefined}
-                  onClick={() => void signOut()}
-                >
-                  <LogOut aria-hidden="true" size={16} strokeWidth={3} />
-                </IconButton>
+              <>
                 <Link
                   to="/history"
-                  className="inline-flex min-w-0 items-center gap-2 px-1 py-1 pl-2"
-                  aria-label={'Open logs for ' + auth.data.user.username}
+                  className="neo-button inline-flex shrink-0 items-center gap-2 bg-blue px-3 py-2 shadow-neo-sm"
                 >
-                  <span className="hidden max-w-28 truncate sm:inline">
-                    {auth.data.user.username}
-                  </span>
-                  <span
-                    className="inline-flex size-8 shrink-0 items-center justify-center border-2 border-border bg-surface font-mono text-[10px] font-bold"
-                    aria-hidden="true"
-                  >
-                    {auth.data.user.username.slice(0, 2).toUpperCase()}
-                  </span>
+                  <BookOpen aria-hidden="true" size={16} strokeWidth={3} />
+                  <span className="sm:hidden">Logs</span>
+                  <span className="hidden sm:inline">My logs</span>
                 </Link>
-              </div>
+                <div className="flex shrink-0 items-center border-[3px] border-border bg-purple p-1 shadow-neo-sm">
+                  <IconButton
+                    label="Sign out"
+                    size="small"
+                    className="border-2 bg-surface px-2 py-2 shadow-none hover:translate-x-0 hover:translate-y-0 hover:shadow-none active:translate-x-0 active:translate-y-0 active:shadow-none"
+                    disabled={logout.isPending}
+                    aria-busy={logout.isPending || undefined}
+                    onClick={() => void signOut()}
+                  >
+                    <LogOut aria-hidden="true" size={16} strokeWidth={3} />
+                  </IconButton>
+                  <Link
+                    to="/history"
+                    className="inline-flex min-w-0 items-center gap-2 px-1 py-1 pl-2"
+                    aria-label={'Open logs for ' + auth.data.user.username}
+                  >
+                    <span className="hidden max-w-28 truncate sm:inline">
+                      {auth.data.user.username}
+                    </span>
+                    <span
+                      className="inline-flex size-8 shrink-0 items-center justify-center border-2 border-border bg-surface font-mono text-[10px] font-bold"
+                      aria-hidden="true"
+                    >
+                      {auth.data.user.username.slice(0, 2).toUpperCase()}
+                    </span>
+                  </Link>
+                </div>
+              </>
             ) : (
               <Link
                 to={signInPath}
