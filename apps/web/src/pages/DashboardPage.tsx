@@ -155,7 +155,11 @@ export function DashboardPage(): JSX.Element {
 
   return (
     <div className="space-y-8">
-      <DashboardHeader publicPath={publicPath} publicUrl={publicUrl} />
+      <DashboardHeader
+        dashboardPath={`/dashboard/${slug}`}
+        publicPath={publicPath}
+        publicUrl={publicUrl}
+      />
       <GoalSummary
         displayName={tracker.displayName}
         topic={tracker.topic}

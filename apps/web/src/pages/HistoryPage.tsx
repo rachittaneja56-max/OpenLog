@@ -1,5 +1,5 @@
-import { ArrowRight, BookOpen, Flame } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { ArrowRight, BookOpen, Flame, LayoutDashboard } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button, Card, EmptyState, ErrorState, LoadingBlock, StatCard } from '../components/ui';
 import { useLogout } from '../features/auth/hooks';
 import { useOwnedTrackers } from '../features/history/hooks';
@@ -9,9 +9,19 @@ function formatStreak(value: number): string {
   return String(value).padStart(2, '0');
 }
 
+function getDashboardPathFromState(state: unknown): string | null {
+  if (!state || typeof state !== 'object' || !('dashboardPath' in state)) return null;
+
+  const dashboardPath = (state as { dashboardPath?: unknown }).dashboardPath;
+  return typeof dashboardPath === 'string' && dashboardPath.startsWith('/dashboard/')
+    ? dashboardPath
+    : null;
+}
+
 export function HistoryPage(): JSX.Element {
   const history = useOwnedTrackers();
   const logout = useLogout();
+  const location = useLocation();
   const navigate = useNavigate();
 
   const signOut = async (): Promise<void> => {
@@ -57,6 +67,8 @@ export function HistoryPage(): JSX.Element {
   }
 
   const trackers = history.data ?? [];
+  const dashboardPathFromState = getDashboardPathFromState(location.state);
+
   if (trackers.length === 0) {
     return (
       <EmptyState
@@ -71,6 +83,8 @@ export function HistoryPage(): JSX.Element {
     );
   }
 
+  const dashboardPath = dashboardPathFromState ?? '/dashboard/' + trackers[0].slug;
+
   return (
     <div className="space-y-8">
       <header className="flex flex-col gap-5 border-b-[3px] border-border pb-6 md:flex-row md:items-end md:justify-between">
@@ -81,9 +95,17 @@ export function HistoryPage(): JSX.Element {
             Every goal you own, with the latest streak snapshot. Pick one to continue the record.
           </p>
         </div>
-        <Button variant="ghost" loading={logout.isPending} onClick={() => void signOut()}>
-          {logout.isPending ? 'SIGNING OUT' : 'SIGN OUT'}
-        </Button>
+        <div className="flex flex-wrap gap-3">
+          <Link
+            className="neo-button inline-flex items-center gap-2 bg-green px-4 py-3 text-sm"
+            to={dashboardPath}
+          >
+            <LayoutDashboard aria-hidden="true" size={17} strokeWidth={3} /> Dashboard
+          </Link>
+          <Button variant="ghost" loading={logout.isPending} onClick={() => void signOut()}>
+            {logout.isPending ? 'SIGNING OUT' : 'SIGN OUT'}
+          </Button>
+        </div>
       </header>
 
       <div className="grid gap-6">

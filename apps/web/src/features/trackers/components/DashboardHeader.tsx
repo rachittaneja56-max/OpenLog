@@ -3,9 +3,13 @@ import { Link } from 'react-router-dom';
 import { Badge, Card, CopyButton, SectionHeading } from '../../../components/ui';
 import { formatTrackerCreatedDate } from '../utils';
 
-type DashboardHeaderProps = { publicPath: string; publicUrl: string };
+type DashboardHeaderProps = { dashboardPath: string; publicPath: string; publicUrl: string };
 
-export function DashboardHeader({ publicPath, publicUrl }: DashboardHeaderProps): JSX.Element {
+export function DashboardHeader({
+  dashboardPath,
+  publicPath,
+  publicUrl,
+}: DashboardHeaderProps): JSX.Element {
   return (
     <header className="flex flex-col gap-5 border-b-[3px] border-border pb-6 md:flex-row md:items-center md:justify-between">
       <div className="flex items-center gap-3">
@@ -16,6 +20,7 @@ export function DashboardHeader({ publicPath, publicUrl }: DashboardHeaderProps)
         <Link
           className="neo-button inline-flex items-center bg-surface px-3 py-2 text-xs"
           to="/history"
+          state={{ dashboardPath }}
         >
           My logs
         </Link>

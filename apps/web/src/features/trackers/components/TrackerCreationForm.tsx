@@ -1,11 +1,11 @@
-﻿import { zodResolver } from '@hookform/resolvers/zod';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { trackerCreationSchema, type TrackerCreationInput } from '@openlog/shared';
 import { ArrowRight, ExternalLink } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '../../../app/providers';
-import { Badge, Button, Card, Textarea, TextInput } from '../../../components/ui';
+import { Badge, Button, Card, Select, Textarea, TextInput } from '../../../components/ui';
 import { isApiError } from '../../../lib/api-error';
 import { useAuthMe } from '../../auth/hooks';
 import { PublicShareActions } from '../../sharing/components';
@@ -16,8 +16,32 @@ const trackerFields = ['displayName', 'topic', 'description', 'timezone'] as con
 
 type TrackerField = (typeof trackerFields)[number];
 
+const commonTimezones = [
+  'Asia/Kolkata',
+  'UTC',
+  'America/New_York',
+  'America/Los_Angeles',
+  'Europe/London',
+  'Europe/Berlin',
+  'Asia/Dubai',
+  'Asia/Singapore',
+  'Asia/Tokyo',
+  'Australia/Sydney',
+];
+
 function getTimezone(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+}
+
+function buildTimezoneOptions(detectedTimezone: string): Array<{ label: string; value: string }> {
+  const timezones = commonTimezones.includes(detectedTimezone)
+    ? commonTimezones
+    : [detectedTimezone, ...commonTimezones];
+
+  return timezones.map((timezone) => ({
+    label: timezone,
+    value: timezone,
+  }));
 }
 
 function TrackerCreatedCard({ result }: { result: CreatedTracker }): JSX.Element {
@@ -79,6 +103,8 @@ export function TrackerCreationForm(): JSX.Element {
   const toast = useToast();
   const auth = useAuthMe();
   const creation = useCreateTracker();
+  const [detectedTimezone] = useState(getTimezone);
+  const timezoneOptions = buildTimezoneOptions(detectedTimezone);
   const [createdTracker, setCreatedTracker] = useState<CreatedTracker | null>(null);
   const form = useForm<TrackerCreationInput>({
     resolver: zodResolver(trackerCreationSchema),
@@ -86,7 +112,7 @@ export function TrackerCreationForm(): JSX.Element {
       displayName: '',
       topic: '',
       description: '',
-      timezone: getTimezone(),
+      timezone: detectedTimezone,
     },
   });
   const isAuthenticated = auth.data?.authenticated === true;
@@ -161,10 +187,11 @@ export function TrackerCreationForm(): JSX.Element {
           error={fieldError('description')}
           {...form.register('description')}
         />
-        <TextInput
+        <Select
           id="tracker-timezone"
           label="Timezone"
           helperText="Detected from your browser. You can change it."
+          options={timezoneOptions}
           error={fieldError('timezone')}
           {...form.register('timezone')}
         />

@@ -1,4 +1,4 @@
-﻿import { ArrowRight, BookOpen, LogOut } from 'lucide-react';
+import { ArrowRight, BookOpen, LogOut } from 'lucide-react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthMe, useLogout } from '../../features/auth/hooks';
 import { IconButton } from './controls';
@@ -108,7 +108,7 @@ export function Layout(): JSX.Element {
           <Outlet />
         </div>
       </main>
-      {location.pathname !== "/" ? (
+      {location.pathname !== '/' ? (
         <footer className="border-t-[3px] border-border bg-surface px-5 py-8 md:px-10">
           <div className="mx-auto flex max-w-6xl flex-col gap-3 text-sm md:flex-row md:items-center md:justify-between">
             <p className="font-mono font-bold">OpenLog &copy; {new Date().getFullYear()}</p>
