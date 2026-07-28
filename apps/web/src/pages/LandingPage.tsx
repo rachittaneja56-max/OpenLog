@@ -1,4 +1,4 @@
-import { BookOpen, Flame, Globe2, Link2, Sparkles } from 'lucide-react';
+﻿import { BookOpen, Flame, Globe2, Link2, Sparkles } from 'lucide-react';
 import { Card, SectionHeading, StatCard, Sticker } from '../components/ui';
 import { TrackerCreationForm } from '../features/trackers/components';
 
@@ -35,19 +35,19 @@ const heatmapClasses = [
 
 const sampleEntries = [
   {
-    date: 'DAY 07 · TODAY',
+    date: 'DAY 07 Â· TODAY',
     title: 'Designed for failure',
     body: 'Compared retries, timeouts, and circuit breakers as separate tools for making a distributed system more honest about failure.',
     minutes: '42 MIN',
   },
   {
-    date: 'DAY 06 · YESTERDAY',
+    date: 'DAY 06 Â· YESTERDAY',
     title: 'Queues and backpressure',
     body: 'Mapped how a queue protects a slow consumer, then noted where unbounded queues simply move the outage downstream.',
     minutes: '35 MIN',
   },
   {
-    date: 'DAY 05 · 2 DAYS AGO',
+    date: 'DAY 05 Â· 2 DAYS AGO',
     title: 'Read replicas',
     body: 'Learned why replicas improve read throughput but do not magically solve consistency or hot partitions.',
     minutes: '28 MIN',
@@ -70,7 +70,7 @@ function ActivityHeatmap({ compact = false }: { compact?: boolean }): JSX.Elemen
 
 export function LandingPage(): JSX.Element {
   return (
-    <div className="space-y-20 pb-8 md:space-y-28">
+    <div className="landing-page space-y-20 pb-8 md:space-y-28">
       <section
         className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.85fr)] lg:items-start xl:gap-16"
         aria-labelledby="hero-heading"
@@ -159,7 +159,7 @@ export function LandingPage(): JSX.Element {
             <div className="border-[3px] border-border bg-surface p-5 md:p-7">
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <span className="font-mono text-xs font-bold uppercase tracking-widest">
-                  07 · Today
+                  07 Â· Today
                 </span>
                 <span className="border-2 border-border bg-blue px-2 py-1 font-mono text-[10px] font-bold uppercase">
                   42 min
@@ -209,7 +209,7 @@ export function LandingPage(): JSX.Element {
 
       <section aria-labelledby="sample-heading">
         <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
-          <SectionHeading id="sample-heading" eyebrow="Sample data · System Design">
+          <SectionHeading id="sample-heading" eyebrow="Sample data Â· System Design">
             A log people can follow.
           </SectionHeading>
           <Sticker tone="orange">SAMPLE PUBLIC LOG</Sticker>
@@ -258,7 +258,7 @@ export function LandingPage(): JSX.Element {
       </section>
 
       <footer className="flex flex-col gap-3 border-t-[3px] border-border pt-6 font-mono text-xs font-bold uppercase tracking-wide md:flex-row md:items-center md:justify-between">
-        <span>OpenLog · Learn in public</span>
+        <span>OpenLog Â· Learn in public</span>
         <span className="flex items-center gap-2">
           <Flame aria-hidden="true" size={15} strokeWidth={3} /> Public logs. Private edit access.
         </span>
