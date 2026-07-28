@@ -5,13 +5,14 @@ import { clearSessionCookie, setSessionCookie } from './session-cookie';
 import {
   authenticateUser,
   claimLegacyTracker,
+  claimLegacyTrackersForUser,
   createSessionForUser,
   createUserAndSession,
   invalidateSession,
 } from './auth.service';
 import type { AuthRouteLocals, AuthSessionResponse, AuthUserResponse } from './auth.types';
 
-type AuthResponse = ApiResponse<{ user: AuthUserResponse }>;
+type AuthResponse = ApiResponse<{ user: AuthUserResponse; claimedTrackers: number }>;
 type ClaimResponse = ApiResponse<{
   user: AuthUserResponse;
   publicPath: string;
@@ -19,7 +20,7 @@ type ClaimResponse = ApiResponse<{
 }>;
 
 export async function loginController(
-  _request: Request,
+  request: Request,
   response: Response<AuthResponse, AuthRouteLocals>,
   next: NextFunction
 ): Promise<void> {
@@ -31,16 +32,20 @@ export async function loginController(
     }
 
     const user = await authenticateUser(input);
+    const claimedTrackers = await claimLegacyTrackersForUser(request.cookies ?? {}, user.id);
     const sessionToken = await createSessionForUser(user.id);
     setSessionCookie(response, sessionToken);
-    response.json({ success: true, data: { user: { username: user.username } } });
+    response.json({
+      success: true,
+      data: { user: { username: user.username }, claimedTrackers },
+    });
   } catch (error: unknown) {
     next(error);
   }
 }
 
 export async function registerController(
-  _request: Request,
+  request: Request,
   response: Response<AuthResponse, AuthRouteLocals>,
   next: NextFunction
 ): Promise<void> {
@@ -52,10 +57,14 @@ export async function registerController(
     }
 
     const account = await createUserAndSession(input);
+    const claimedTrackers = await claimLegacyTrackersForUser(
+      request.cookies ?? {},
+      account.user.id
+    );
     setSessionCookie(response, account.sessionToken);
     response.status(201).json({
       success: true,
-      data: { user: { username: account.user.username } },
+      data: { user: { username: account.user.username }, claimedTrackers },
     });
   } catch (error: unknown) {
     next(error);
@@ -77,7 +86,7 @@ export async function logoutController(
 }
 
 export async function meController(
-  _request: Request,
+  request: Request,
   response: Response<ApiResponse<AuthSessionResponse>, AuthRouteLocals>,
   next: NextFunction
 ): Promise<void> {
@@ -92,6 +101,7 @@ export async function meController(
       return;
     }
 
+    await claimLegacyTrackersForUser(request.cookies ?? {}, user.id);
     response.json({
       success: true,
       data: { authenticated: true, user: { username: user.username } },

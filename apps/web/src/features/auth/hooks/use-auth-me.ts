@@ -1,8 +1,14 @@
-import { useCallback } from 'react';
-import { getCurrentUser, type AuthenticatedSession } from '../api/auth-api';
-import { useRequest, type DataHookResult } from '../../../hooks/use-request';
+import type { AuthenticatedSession } from '../api/auth-api';
+import type { DataHookResult } from '../../../hooks/use-request';
+import { useAuthSession } from '../auth-context';
 
 export function useAuthMe(): DataHookResult<AuthenticatedSession> {
-  const request = useCallback((signal: AbortSignal) => getCurrentUser(signal), []);
-  return useRequest(request, []);
+  const auth = useAuthSession();
+  return {
+    data: auth.data,
+    error: auth.error,
+    status: auth.status,
+    isLoading: auth.isLoading,
+    refetch: auth.refetch,
+  };
 }

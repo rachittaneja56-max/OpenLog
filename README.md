@@ -1,31 +1,89 @@
 # OpenLog
 
-OpenLog is a learn-in-public streak tracker. Create a public learning log, add one note per day, and share the proof.
+OpenLog is a small learn-in-public tracker. You pick something you want to learn, write one update a day, and share the progress through a public link.
 
-## Development
+**Live:** [openlog-production.up.railway.app](https://openlog-production.up.railway.app/)
 
-- pnpm dev starts the Vite frontend and Express server.
-- pnpm build creates production builds.
-- pnpm typecheck checks all TypeScript packages.
-- pnpm lint checks the workspace.
-- pnpm db:generate creates a Drizzle migration.
-- pnpm db:migrate applies migrations to the configured PostgreSQL database.
-- pnpm db:studio opens Drizzle Studio.
+## The idea
 
-## Accounts, history, and public links
+I wanted starting a log to feel lightweight, so creating one does not require an account. The app gives the creator a private browser key and immediately creates a public page such as `/learn/system-design-a1b2`.
 
-Creating a public log does not require account credentials in the landing form. After creation, sign in or create an account to edit the log and keep it in your history. The original owner-only browser cookie lets the creator attach that new log to the account once.
+An account is only needed for returning to logs and editing them from another browser. When the creator signs in, OpenLog uses that private browser key to attach any unclaimed logs to the account. Visitors opening the public link never need to sign in.
 
-Passwords are stored only as Argon2id hashes. OpenLog uses a hashed-token, HTTP-only session cookie for dashboard and history access.
+Each tracker has its own timezone. Entries are limited to one per calendar day, and the streak and heatmap are calculated from those entries rather than stored as counters.
 
-- /login is the separate sign-in and account-creation page.
-- /history shows the authenticated user's trackers and their latest derived statistics.
-- /dashboard/:slug requires an authenticated account that owns the tracker.
-- /learn/:slug is public and does not require login or cookies.
-- Existing trackers created before account ownership can be attached once from the original owner-cookie browser.
+## Project structure
 
-Public links are intentionally shareable. They expose only the learning goal, public entries, derived streak statistics, and activity heatmap. They never expose passwords, session tokens, owner-token hashes, or authorization records.
+This is a pnpm monorepo:
 
-## Public page rendering limitation
+- `apps/web` contains the React and Vite frontend.
+- `apps/server` contains the Express API and production web server.
+- `packages/shared` contains validation schemas, API types, and streak calculations used by both sides.
 
-The /learn/:slug page updates its browser title and meta description after the tracker loads. This is client-rendered; crawlers or link previews that do not execute JavaScript may see the default index.html metadata. OpenLog does not add SSR solely for social metadata.
+The API uses PostgreSQL through Drizzle. The database enforces the rules that should not depend on UI code: unique usernames and slugs, unique session tokens, and one entry per tracker per day.
+
+In production, Express serves the API and the built frontend from the same Railway service. Keeping them on one origin also keeps the session-cookie setup straightforward.
+
+## Public links and private editing
+
+These pages are intentionally public:
+
+- `/`
+- `/learn/:slug`
+- the public tracker API used by the shared page
+
+These areas require a signed-in owner:
+
+- `/history`
+- `/dashboard/:slug`
+- creating, updating, or deleting entries
+
+The frontend route guards are there for navigation, but the API performs the real authentication and ownership checks.
+
+Passwords are hashed with Argon2id. Session and anonymous-owner tokens are random values stored only in HTTP-only cookies; the database stores hashes of those tokens. Production cookies are secure, use `SameSite=Lax`, and sessions expire after 30 days.
+
+## Running locally
+
+You need Node.js, pnpm, and a PostgreSQL database.
+
+Copy `.env.example` to `.env`:
+
+```env
+PORT=3000
+NODE_ENV=development
+CLIENT_ORIGIN=http://localhost:5173
+DATABASE_URL=postgresql://user:password@host/database?sslmode=require
+```
+
+Install dependencies, apply the migrations, and start both apps:
+
+```bash
+pnpm install
+pnpm db:migrate
+pnpm dev
+```
+
+The frontend runs at `http://localhost:5173`; Vite proxies `/api` requests to the server on port `3000`.
+
+## Useful commands
+
+```bash
+pnpm test          # authentication, ownership, and redirect regression tests
+pnpm typecheck     # TypeScript checks for every workspace
+pnpm lint          # ESLint
+pnpm build         # production server and frontend builds
+pnpm db:generate   # generate a Drizzle migration
+pnpm db:migrate    # apply pending migrations
+```
+
+## Deployment
+
+The app is deployed on Railway at [openlog-production.up.railway.app](https://openlog-production.up.railway.app/). Railway builds with `pnpm build` and starts the production server with `pnpm start`.
+
+The health endpoint also checks the database connection: [openlog-production.up.railway.app/api/health](https://openlog-production.up.railway.app/api/health).
+
+## Things I intentionally left out
+
+- Accounts use usernames instead of email, so there is no email provider or password-reset flow.
+- Public pages are client-rendered. The title and description update in the browser, but link-preview crawlers that do not run JavaScript may see the default metadata.
+- Sessions have a fixed 30-day lifetime instead of renewing forever on activity.

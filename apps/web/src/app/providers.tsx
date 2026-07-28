@@ -9,6 +9,7 @@ import {
   type ReactNode,
 } from 'react';
 import { Toast } from '../components/ui/feedback';
+import { AuthProvider } from '../features/auth/auth-context';
 
 type ToastContextValue = {
   notify: (message: string) => void;
@@ -56,5 +57,9 @@ export function useToast(): ToastContextValue {
 }
 
 export function Providers({ children }: { children: ReactNode }): JSX.Element {
-  return <ToastProvider>{children}</ToastProvider>;
+  return (
+    <AuthProvider>
+      <ToastProvider>{children}</ToastProvider>
+    </AuthProvider>
+  );
 }

@@ -1,11 +1,15 @@
-import { zodResolver } from '@hookform/resolvers/zod';
+﻿import { zodResolver } from '@hookform/resolvers/zod';
 import { trackerCreationSchema, type TrackerCreationInput } from '@openlog/shared';
+import { ArrowRight, ExternalLink } from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useToast } from '../../../app/providers';
-import { Button, Card, Textarea, TextInput } from '../../../components/ui';
+import { Badge, Button, Card, Textarea, TextInput } from '../../../components/ui';
 import { isApiError } from '../../../lib/api-error';
 import { useAuthMe } from '../../auth/hooks';
+import { PublicShareActions } from '../../sharing/components';
+import type { CreatedTracker } from '../api/tracker-api';
 import { useCreateTracker } from '../hooks/use-create-tracker';
 
 const trackerFields = ['displayName', 'topic', 'description', 'timezone'] as const;
@@ -16,11 +20,66 @@ function getTimezone(): string {
   return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
 }
 
+function TrackerCreatedCard({ result }: { result: CreatedTracker }): JSX.Element {
+  const publicUrl = `${window.location.origin}${result.publicPath}`;
+  const loginPath = '/login?returnTo=' + encodeURIComponent(result.dashboardPath);
+
+  return (
+    <Card
+      id="create-log"
+      variant="green"
+      className="mx-auto w-full max-w-xl scroll-mt-8 p-6 md:p-8"
+      role="status"
+    >
+      <Badge tone="yellow">Public link ready</Badge>
+      <h2 className="mt-5 text-4xl">Your log is live.</h2>
+      <p className="mt-4 font-medium leading-relaxed">
+        Your page for <strong>{result.tracker.topic}</strong> is public and ready to share. Anyone
+        with the link can view it without an account.
+      </p>
+
+      <div className="mt-6 border-[3px] border-border bg-surface p-4">
+        <p className="font-mono text-[10px] font-bold uppercase tracking-widest">Public URL</p>
+        <p className="mt-2 break-all font-mono text-sm font-bold">{publicUrl}</p>
+      </div>
+
+      <div className="mt-6 flex flex-wrap gap-3">
+        <Link
+          className="neo-button inline-flex items-center gap-2 bg-yellow px-4 py-3"
+          to={result.publicPath}
+        >
+          VIEW PUBLIC LOG <ExternalLink aria-hidden="true" size={17} strokeWidth={3} />
+        </Link>
+        <Link
+          className="neo-button inline-flex items-center gap-2 bg-surface px-4 py-3"
+          to={loginPath}
+        >
+          SIGN IN TO ADD ENTRIES <ArrowRight aria-hidden="true" size={17} strokeWidth={3} />
+        </Link>
+      </div>
+
+      <div className="mt-5 border-t-2 border-border pt-5">
+        <PublicShareActions
+          url={publicUrl}
+          title={`${result.tracker.topic} - OpenLog`}
+          text={`Follow my progress learning ${result.tracker.topic}.`}
+        />
+      </div>
+
+      <p className="mt-5 font-mono text-[10px] font-bold uppercase leading-relaxed tracking-wide">
+        Viewing stays public. Signing in is only needed to write entries and keep this log in My
+        Logs.
+      </p>
+    </Card>
+  );
+}
+
 export function TrackerCreationForm(): JSX.Element {
   const navigate = useNavigate();
   const toast = useToast();
   const auth = useAuthMe();
   const creation = useCreateTracker();
+  const [createdTracker, setCreatedTracker] = useState<CreatedTracker | null>(null);
   const form = useForm<TrackerCreationInput>({
     resolver: zodResolver(trackerCreationSchema),
     defaultValues: {
@@ -36,17 +95,15 @@ export function TrackerCreationForm(): JSX.Element {
   const onSubmit = async (values: TrackerCreationInput): Promise<void> => {
     try {
       const result = await creation.mutate(values);
-      toast.notify(
-        isAuthenticated
-          ? 'Your log is live and ready to edit.'
-          : 'Your log is live. Sign in to edit and keep it in your history.'
-      );
 
       if (isAuthenticated) {
+        toast.notify('Your log is live and ready to edit.');
         navigate(result.dashboardPath);
-      } else {
-        navigate('/login?returnTo=' + encodeURIComponent(result.dashboardPath));
+        return;
       }
+
+      setCreatedTracker(result);
+      toast.notify('Your public log is live. Open or copy the link below.');
     } catch (error: unknown) {
       if (!isApiError(error) || !error.fieldErrors) return;
       for (const field of trackerFields) {
@@ -59,6 +116,10 @@ export function TrackerCreationForm(): JSX.Element {
   const errorMessage = creation.error?.message;
   const fieldError = (field: TrackerField): string | undefined =>
     form.formState.errors[field]?.message;
+
+  if (createdTracker) {
+    return <TrackerCreatedCard result={createdTracker} />;
+  }
 
   return (
     <Card

@@ -1,5 +1,4 @@
 import { ArrowRight, LogOut } from 'lucide-react';
-import { useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthMe, useLogout } from '../../features/auth/hooks';
 import { IconButton } from './controls';
@@ -9,20 +8,13 @@ export function Layout(): JSX.Element {
   const navigate = useNavigate();
   const auth = useAuthMe();
   const logout = useLogout();
-  const previousPath = useRef(location.pathname);
-
-  useEffect(() => {
-    if (previousPath.current === location.pathname) return;
-    previousPath.current = location.pathname;
-    auth.refetch();
-  }, [auth.refetch, location.pathname]);
 
   const signOut = async (): Promise<void> => {
     try {
       await logout.mutate(undefined);
-      navigate('/login');
+      navigate('/login', { replace: true });
     } catch {
-      // The safe mutation error is handled by the protected page when needed.
+      // The current session stays visible when the server cannot complete sign-out.
     }
   };
 
@@ -35,13 +27,16 @@ export function Layout(): JSX.Element {
     <div className="min-h-screen overflow-x-hidden">
       <header className="border-b-[3px] border-border bg-yellow px-5 py-4 md:px-10">
         <nav
-          className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-4"
+          className="mx-auto flex max-w-6xl flex-wrap items-center gap-4"
           aria-label="Primary navigation"
         >
-          <Link to="/" className="font-display text-2xl uppercase tracking-widest text-foreground">
+          <Link
+            to="/"
+            className="shrink-0 font-display text-2xl uppercase tracking-widest text-foreground"
+          >
             OpenLog
           </Link>
-          <div className="flex flex-wrap items-center justify-end gap-3 font-mono text-xs font-bold uppercase tracking-widest md:gap-5">
+          <div className="ml-auto flex min-w-0 flex-wrap items-center justify-end gap-3 font-mono text-xs font-bold uppercase tracking-widest md:gap-5">
             <a
               href="/#how-it-works"
               className="hidden underline-offset-4 hover:underline sm:inline"
@@ -51,23 +46,16 @@ export function Layout(): JSX.Element {
             <a href="/#demo" className="hidden underline-offset-4 hover:underline sm:inline">
               Demo
             </a>
+            <a
+              href="/#create-log"
+              className="neo-button inline-flex items-center gap-2 bg-green px-3 py-2 shadow-neo-sm"
+            >
+              <span className="sm:hidden">Start</span>
+              <span className="hidden sm:inline">Start a log</span>
+              <ArrowRight aria-hidden="true" size={15} strokeWidth={3} />
+            </a>
             {auth.data?.authenticated ? (
-              <div className="flex items-center border-[3px] border-border bg-purple p-1 shadow-neo-sm">
-                <Link
-                  to="/history"
-                  className="inline-flex min-w-0 items-center gap-2 px-1 py-1"
-                  aria-label={'Open logs for ' + auth.data.user.username}
-                >
-                  <span
-                    className="inline-flex size-8 shrink-0 items-center justify-center border-2 border-border bg-surface font-mono text-[10px] font-bold"
-                    aria-hidden="true"
-                  >
-                    {auth.data.user.username.slice(0, 2).toUpperCase()}
-                  </span>
-                  <span className="hidden max-w-28 truncate sm:inline">
-                    {auth.data.user.username}
-                  </span>
-                </Link>
+              <div className="flex shrink-0 items-center border-[3px] border-border bg-purple p-1 shadow-neo-sm">
                 <IconButton
                   label="Sign out"
                   size="small"
@@ -78,21 +66,30 @@ export function Layout(): JSX.Element {
                 >
                   <LogOut aria-hidden="true" size={16} strokeWidth={3} />
                 </IconButton>
+                <Link
+                  to="/history"
+                  className="inline-flex min-w-0 items-center gap-2 px-1 py-1 pl-2"
+                  aria-label={'Open logs for ' + auth.data.user.username}
+                >
+                  <span className="hidden max-w-28 truncate sm:inline">
+                    {auth.data.user.username}
+                  </span>
+                  <span
+                    className="inline-flex size-8 shrink-0 items-center justify-center border-2 border-border bg-surface font-mono text-[10px] font-bold"
+                    aria-hidden="true"
+                  >
+                    {auth.data.user.username.slice(0, 2).toUpperCase()}
+                  </span>
+                </Link>
               </div>
             ) : (
               <Link
                 to={signInPath}
-                className="neo-button inline-flex items-center bg-surface px-3 py-2 shadow-neo-sm"
+                className="neo-button inline-flex shrink-0 items-center bg-surface px-3 py-2 shadow-neo-sm"
               >
                 Sign in
               </Link>
             )}
-            <a
-              href="/#create-log"
-              className="neo-button inline-flex items-center gap-2 bg-green px-3 py-2 shadow-neo-sm"
-            >
-              Start a log <ArrowRight aria-hidden="true" size={15} strokeWidth={3} />
-            </a>
           </div>
         </nav>
       </header>

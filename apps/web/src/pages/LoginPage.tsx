@@ -2,23 +2,20 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { authCredentialsSchema, type AuthCredentialsInput } from '@openlog/shared';
 import { ArrowRight, LockKeyhole } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useToast } from '../app/providers';
-import { Button, Card, TextInput } from '../components/ui';
+import { Button, Card, LoadingBlock, TextInput } from '../components/ui';
 import { isApiError } from '../lib/api-error';
-import { useLogin, useRegister } from '../features/auth/hooks';
-
-function getSafeReturnPath(search: string): string {
-  const returnTo = new URLSearchParams(search).get('returnTo');
-  if (!returnTo || !returnTo.startsWith('/') || returnTo.startsWith('//')) return '/history';
-  return returnTo;
-}
+import { useAuthMe, useLogin, useRegister } from '../features/auth/hooks';
+import { getSafeReturnPath } from '../features/auth/auth-navigation';
 
 export function LoginPage(): JSX.Element {
   const location = useLocation();
   const navigate = useNavigate();
   const toast = useToast();
+  const auth = useAuthMe();
   const isRegister = new URLSearchParams(location.search).get('mode') === 'register';
+  const returnPath = getSafeReturnPath(location.search);
   const login = useLogin();
   const register = useRegister();
   const form = useForm<AuthCredentialsInput>({
@@ -34,18 +31,25 @@ export function LoginPage(): JSX.Element {
 
   const onSubmit = async (values: AuthCredentialsInput): Promise<void> => {
     try {
-      if (isRegister) {
-        await register.mutate(values);
-        toast.notify('Account created. Your logs are ready.');
-      } else {
-        await login.mutate(values);
-        toast.notify('You are signed in.');
-      }
-      navigate(getSafeReturnPath(location.search));
+      const result = isRegister ? await register.mutate(values) : await login.mutate(values);
+      const attachedMessage =
+        result.claimedTrackers > 0
+          ? ` ${result.claimedTrackers} ${result.claimedTrackers === 1 ? 'log is' : 'logs are'} now attached to your account.`
+          : '';
+      toast.notify((isRegister ? 'Account created.' : 'You are signed in.') + attachedMessage);
+      navigate(returnPath, { replace: true });
     } catch {
       // The safe mutation error is rendered below.
     }
   };
+
+  if (auth.isLoading && !auth.data) {
+    return <LoadingBlock label="Checking your session" />;
+  }
+
+  if (auth.data?.authenticated) {
+    return <Navigate replace to={returnPath} />;
+  }
 
   const usernameError = form.formState.errors.username?.message;
   const passwordError = form.formState.errors.password?.message;
@@ -57,10 +61,7 @@ export function LoginPage(): JSX.Element {
         : authError?.message;
 
   const alternateModePath =
-    '/login?' +
-    (isRegister ? '' : 'mode=register&') +
-    'returnTo=' +
-    encodeURIComponent(getSafeReturnPath(location.search));
+    '/login?' + (isRegister ? '' : 'mode=register&') + 'returnTo=' + encodeURIComponent(returnPath);
 
   return (
     <div className="mx-auto grid min-h-[65vh] w-full max-w-5xl items-center gap-10 lg:grid-cols-2 lg:gap-16">

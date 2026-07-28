@@ -6,6 +6,7 @@
     "dev": "pnpm --filter shared build && concurrently \"pnpm --filter web dev\" \"pnpm --filter server dev\"",
     "build": "pnpm --filter shared build && pnpm --filter server build && pnpm --filter web build",
     "start": "pnpm --filter server start",
+    "test": "vitest run",
     "typecheck": "pnpm --filter shared build && pnpm --recursive run typecheck",
     "lint": "eslint . --ext .js,.ts,.tsx --report-unused-disable-directives --max-warnings 0",
     "format": "prettier --write .",
@@ -20,6 +21,7 @@
     "concurrently": "^8.2.2",
     "eslint": "^8.57.0",
     "prettier": "^3.2.5",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "vitest": "3.2.4"
   }
 }

@@ -8,6 +8,7 @@ export type LoginResult = {
   user: {
     username: string;
   };
+  claimedTrackers: number;
 };
 
 export type ClaimTrackerInput = {

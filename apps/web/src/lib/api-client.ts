@@ -1,7 +1,8 @@
-﻿import type { ApiFailure, ApiResponse } from '@openlog/shared';
+import type { ApiFailure, ApiResponse } from '@openlog/shared';
 import { ApiError, toApiError } from './api-error';
 
 const API_PREFIX = '/api';
+export const SESSION_INVALIDATED_EVENT = 'openlog:session-invalidated';
 
 type ApiResponseData<T> = ApiResponse<T>;
 
@@ -89,6 +90,9 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   const parsed = parseResponseBody(text, response.status);
 
   if (!response.ok) {
+    if (response.status === 401) {
+      window.dispatchEvent(new Event(SESSION_INVALIDATED_EVENT));
+    }
     if (isApiResponse<never>(parsed) && isApiFailure(parsed)) {
       throw getFailureError(parsed, response.status);
     }

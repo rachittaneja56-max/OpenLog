@@ -8,9 +8,14 @@ import {
   insertSession,
   updateSessionUsage,
 } from '../../repositories/session.repository';
-import { findTrackerBySlug, linkTrackerToUser } from '../../repositories/tracker.repository';
+import {
+  findTrackerById,
+  findTrackerBySlug,
+  linkTrackerToUser,
+} from '../../repositories/tracker.repository';
 import { findUserById, findUserByUsername, insertUser } from '../../repositories/user.repository';
 import { checkOwnership } from '../ownership/ownership.service';
+import { getOwnerTrackerIds } from '../ownership/owner-cookie';
 import type { OwnerCookieSource } from '../ownership/ownership.types';
 import { getSessionCookieValue, getSessionExpiry } from './session-cookie';
 import { hashPassword, verifyPassword } from './password';
@@ -129,6 +134,26 @@ export async function invalidateSession(cookies: OwnerCookieSource): Promise<voi
   if (!token) return;
   const session = await findSessionByTokenHash(hashSessionToken(token));
   if (session) await deleteSession(session.id);
+}
+
+export async function claimLegacyTrackersForUser(
+  cookies: OwnerCookieSource,
+  userId: string
+): Promise<number> {
+  let claimedTrackers = 0;
+
+  for (const trackerId of getOwnerTrackerIds(cookies)) {
+    const tracker = await findTrackerById(trackerId);
+    if (!tracker || tracker.ownerUserId !== null) continue;
+
+    const ownership = await checkOwnership(tracker.slug, cookies);
+    if (!ownership.isOwner) continue;
+
+    const linkedTracker = await linkTrackerToUser(tracker.id, userId);
+    if (linkedTracker) claimedTrackers += 1;
+  }
+
+  return claimedTrackers;
 }
 
 export async function claimLegacyTracker(
